@@ -12,20 +12,20 @@
 encode(Format, Data) ->
     case encode_to_string(Format, Data) of
         {ok, Encoded} ->
-            {ok, binary_to_list(Encoded)};
+            {ok, list_to_binary(Encoded)};
         Error ->
             Error
     end.
 
 -spec encode_to_string(base32_format(), base32_data()) ->
     {ok, ascii_string()} | {error, atom()}.
+encode_to_string(Format, Data) when is_list(Data) ->
+    encode_to_string(Format, list_to_binary(Data));
 encode_to_string(rfc4648, Data) ->
     encode_rfc4648_to_string(Data);
 encode_to_string(Format, _) ->
     {error, {invalid_format, Format}}.
 
-encode_rfc4648_to_string(Data) when is_list(Data) ->
-    encode_rfc4648_to_string(list_to_binary(Data));
 encode_rfc4648_to_string(Data) ->
     Size = bit_size(Data),
     N = Size div 5 + (case Size rem 5 of
