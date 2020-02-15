@@ -4,7 +4,7 @@
 
 -import(base32, [encode_to_string/2]).
 
-basic_test() ->
+rfc4648_encode_test() ->
     Format = rfc4648,
     ?assertEqual({ok, "MY======"}, encode_to_string(Format, "f")),
     ?assertEqual({ok, "MZXQ===="}, encode_to_string(Format, "fo")),
