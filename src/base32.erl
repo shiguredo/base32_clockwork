@@ -2,6 +2,8 @@
 
 -export([encode/2, encode_to_string/2, decode/2, decode_to_string/2]).
 
+-import(base32_utils, [rev_bits_list_to_binary/1]).
+
 -type ascii_string() :: [1..255].
 -type ascii_binary() :: binary().
 -type base32_data() :: ascii_string() | ascii_binary().
@@ -28,165 +30,159 @@ encode_to_string(Format, _) ->
 
 encode_rfc4648_to_string(Data) ->
     Size = bit_size(Data),
-    N = Size div 5 + (case Size rem 5 of
-                          0 -> 0;
-                          _ -> 1
-                      end),
     case 40 - (Size rem 40) of
         40 ->
-            RevEncoded = encode_rfc4648_to_string0(Data, N, []),
+            RevEncoded = encode_rfc4648_to_string0(Data, []),
             {ok, lists:reverse(RevEncoded)};
         32 ->
-            RevEncoded = encode_rfc4648_to_string0(Data, N, []),
+            RevEncoded = encode_rfc4648_to_string0(Data, []),
             {ok, lists:reverse([$=, $=, $=, $=, $=, $=|RevEncoded])};
         24 ->
-            RevEncoded = encode_rfc4648_to_string0(Data, N, []),
+            RevEncoded = encode_rfc4648_to_string0(Data, []),
             {ok, lists:reverse([$=, $=, $=, $=|RevEncoded])};
         16 ->
-            RevEncoded = encode_rfc4648_to_string0(Data, N, []),
+            RevEncoded = encode_rfc4648_to_string0(Data, []),
             {ok, lists:reverse([$=, $=, $=|RevEncoded])};
         8 ->
-            RevEncoded = encode_rfc4648_to_string0(Data, N, []),
+            RevEncoded = encode_rfc4648_to_string0(Data, []),
             {ok, lists:reverse([$=|RevEncoded])};
         _ ->
             error(badarg)
     end.
 
-encode_rfc4648_to_string0(<<>>, 0, Accu) ->
+encode_rfc4648_to_string0(<<>>, Accu) ->
     Accu;
-encode_rfc4648_to_string0(Bin, 0, _) ->
-    {error, {halt, Bin}};
 
-encode_rfc4648_to_string0(<<0:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$A|Accu]);
-encode_rfc4648_to_string0(<<1:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$B|Accu]);
-encode_rfc4648_to_string0(<<2:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$C|Accu]);
-encode_rfc4648_to_string0(<<3:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$D|Accu]);
-encode_rfc4648_to_string0(<<4:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$E|Accu]);
-encode_rfc4648_to_string0(<<5:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$F|Accu]);
-encode_rfc4648_to_string0(<<6:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$G|Accu]);
-encode_rfc4648_to_string0(<<7:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$H|Accu]);
-encode_rfc4648_to_string0(<<8:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$I|Accu]);
-encode_rfc4648_to_string0(<<9:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$J|Accu]);
-encode_rfc4648_to_string0(<<10:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$K|Accu]);
-encode_rfc4648_to_string0(<<11:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$L|Accu]);
-encode_rfc4648_to_string0(<<12:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$M|Accu]);
-encode_rfc4648_to_string0(<<13:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$N|Accu]);
-encode_rfc4648_to_string0(<<14:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$O|Accu]);
-encode_rfc4648_to_string0(<<15:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$P|Accu]);
-encode_rfc4648_to_string0(<<16:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$Q|Accu]);
-encode_rfc4648_to_string0(<<17:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$R|Accu]);
-encode_rfc4648_to_string0(<<18:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$S|Accu]);
-encode_rfc4648_to_string0(<<19:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$T|Accu]);
-encode_rfc4648_to_string0(<<20:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$U|Accu]);
-encode_rfc4648_to_string0(<<21:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$V|Accu]);
-encode_rfc4648_to_string0(<<22:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$W|Accu]);
-encode_rfc4648_to_string0(<<23:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$X|Accu]);
-encode_rfc4648_to_string0(<<24:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$Y|Accu]);
-encode_rfc4648_to_string0(<<25:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$Z|Accu]);
-encode_rfc4648_to_string0(<<26:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$2|Accu]);
-encode_rfc4648_to_string0(<<27:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$3|Accu]);
-encode_rfc4648_to_string0(<<28:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$4|Accu]);
-encode_rfc4648_to_string0(<<29:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$5|Accu]);
-encode_rfc4648_to_string0(<<30:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$6|Accu]);
-encode_rfc4648_to_string0(<<31:5, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$7|Accu]);
+encode_rfc4648_to_string0(<<0:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$A|Accu]);
+encode_rfc4648_to_string0(<<1:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$B|Accu]);
+encode_rfc4648_to_string0(<<2:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$C|Accu]);
+encode_rfc4648_to_string0(<<3:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$D|Accu]);
+encode_rfc4648_to_string0(<<4:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$E|Accu]);
+encode_rfc4648_to_string0(<<5:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$F|Accu]);
+encode_rfc4648_to_string0(<<6:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$G|Accu]);
+encode_rfc4648_to_string0(<<7:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$H|Accu]);
+encode_rfc4648_to_string0(<<8:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$I|Accu]);
+encode_rfc4648_to_string0(<<9:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$J|Accu]);
+encode_rfc4648_to_string0(<<10:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$K|Accu]);
+encode_rfc4648_to_string0(<<11:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$L|Accu]);
+encode_rfc4648_to_string0(<<12:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$M|Accu]);
+encode_rfc4648_to_string0(<<13:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$N|Accu]);
+encode_rfc4648_to_string0(<<14:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$O|Accu]);
+encode_rfc4648_to_string0(<<15:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$P|Accu]);
+encode_rfc4648_to_string0(<<16:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$Q|Accu]);
+encode_rfc4648_to_string0(<<17:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$R|Accu]);
+encode_rfc4648_to_string0(<<18:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$S|Accu]);
+encode_rfc4648_to_string0(<<19:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$T|Accu]);
+encode_rfc4648_to_string0(<<20:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$U|Accu]);
+encode_rfc4648_to_string0(<<21:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$V|Accu]);
+encode_rfc4648_to_string0(<<22:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$W|Accu]);
+encode_rfc4648_to_string0(<<23:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$X|Accu]);
+encode_rfc4648_to_string0(<<24:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$Y|Accu]);
+encode_rfc4648_to_string0(<<25:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$Z|Accu]);
+encode_rfc4648_to_string0(<<26:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$2|Accu]);
+encode_rfc4648_to_string0(<<27:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$3|Accu]);
+encode_rfc4648_to_string0(<<28:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$4|Accu]);
+encode_rfc4648_to_string0(<<29:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$5|Accu]);
+encode_rfc4648_to_string0(<<30:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$6|Accu]);
+encode_rfc4648_to_string0(<<31:5, Next/bitstring>>, Accu) ->
+    encode_rfc4648_to_string0(Next, [$7|Accu]);
 
-encode_rfc4648_to_string0(<<0:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$A|Accu]);
-encode_rfc4648_to_string0(<<1:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$C|Accu]);
-encode_rfc4648_to_string0(<<2:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$E|Accu]);
-encode_rfc4648_to_string0(<<3:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$G|Accu]);
-encode_rfc4648_to_string0(<<4:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$I|Accu]);
-encode_rfc4648_to_string0(<<5:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$K|Accu]);
-encode_rfc4648_to_string0(<<6:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$M|Accu]);
-encode_rfc4648_to_string0(<<7:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$O|Accu]);
-encode_rfc4648_to_string0(<<8:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$Q|Accu]);
-encode_rfc4648_to_string0(<<9:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$S|Accu]);
-encode_rfc4648_to_string0(<<10:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$U|Accu]);
-encode_rfc4648_to_string0(<<11:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$W|Accu]);
-encode_rfc4648_to_string0(<<12:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$Y|Accu]);
-encode_rfc4648_to_string0(<<13:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$2|Accu]);
-encode_rfc4648_to_string0(<<14:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$4|Accu]);
-encode_rfc4648_to_string0(<<15:4, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$6|Accu]);
+encode_rfc4648_to_string0(<<0:4>>, Accu) ->
+    [$A|Accu];
+encode_rfc4648_to_string0(<<1:4>>, Accu) ->
+    [$C|Accu];
+encode_rfc4648_to_string0(<<2:4>>, Accu) ->
+    [$E|Accu];
+encode_rfc4648_to_string0(<<3:4>>, Accu) ->
+    [$G|Accu];
+encode_rfc4648_to_string0(<<4:4>>, Accu) ->
+    [$I|Accu];
+encode_rfc4648_to_string0(<<5:4>>, Accu) ->
+    [$K|Accu];
+encode_rfc4648_to_string0(<<6:4>>, Accu) ->
+    [$M|Accu];
+encode_rfc4648_to_string0(<<7:4>>, Accu) ->
+    [$O|Accu];
+encode_rfc4648_to_string0(<<8:4>>, Accu) ->
+    [$Q|Accu];
+encode_rfc4648_to_string0(<<9:4>>, Accu) ->
+    [$S|Accu];
+encode_rfc4648_to_string0(<<10:4>>, Accu) ->
+    [$U|Accu];
+encode_rfc4648_to_string0(<<11:4>>, Accu) ->
+    [$W|Accu];
+encode_rfc4648_to_string0(<<12:4>>, Accu) ->
+    [$Y|Accu];
+encode_rfc4648_to_string0(<<13:4>>, Accu) ->
+    [$2|Accu];
+encode_rfc4648_to_string0(<<14:4>>, Accu) ->
+    [$4|Accu];
+encode_rfc4648_to_string0(<<15:4>>, Accu) ->
+    [$6|Accu];
 
-encode_rfc4648_to_string0(<<0:3, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$A|Accu]);
-encode_rfc4648_to_string0(<<1:3, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$E|Accu]);
-encode_rfc4648_to_string0(<<2:3, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$I|Accu]);
-encode_rfc4648_to_string0(<<3:3, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$M|Accu]);
-encode_rfc4648_to_string0(<<4:3, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$Q|Accu]);
-encode_rfc4648_to_string0(<<5:3, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$U|Accu]);
-encode_rfc4648_to_string0(<<6:3, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$Y|Accu]);
-encode_rfc4648_to_string0(<<7:3, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$4|Accu]);
+encode_rfc4648_to_string0(<<0:3>>, Accu) ->
+    [$A|Accu];
+encode_rfc4648_to_string0(<<1:3>>, Accu) ->
+    [$E|Accu];
+encode_rfc4648_to_string0(<<2:3>>, Accu) ->
+    [$I|Accu];
+encode_rfc4648_to_string0(<<3:3>>, Accu) ->
+    [$M|Accu];
+encode_rfc4648_to_string0(<<4:3>>, Accu) ->
+    [$Q|Accu];
+encode_rfc4648_to_string0(<<5:3>>, Accu) ->
+    [$U|Accu];
+encode_rfc4648_to_string0(<<6:3>>, Accu) ->
+    [$Y|Accu];
+encode_rfc4648_to_string0(<<7:3>>, Accu) ->
+    [$4|Accu];
 
-encode_rfc4648_to_string0(<<0:2, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$A|Accu]);
-encode_rfc4648_to_string0(<<1:2, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$I|Accu]);
-encode_rfc4648_to_string0(<<2:2, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$Q|Accu]);
-encode_rfc4648_to_string0(<<3:2, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$Y|Accu]);
+encode_rfc4648_to_string0(<<0:2>>, Accu) ->
+    [$A|Accu];
+encode_rfc4648_to_string0(<<1:2>>, Accu) ->
+    [$I|Accu];
+encode_rfc4648_to_string0(<<2:2>>, Accu) ->
+    [$Q|Accu];
+encode_rfc4648_to_string0(<<3:2>>, Accu) ->
+    [$Y|Accu];
 
-encode_rfc4648_to_string0(<<0:1, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$A|Accu]);
-encode_rfc4648_to_string0(<<1:1, Next/bitstring>>, N, Accu) ->
-    encode_rfc4648_to_string0(Next, N-1, [$Q|Accu]);
+encode_rfc4648_to_string0(<<0:1>>, Accu) ->
+    [$A|Accu];
+encode_rfc4648_to_string0(<<1:1>>, Accu) ->
+    [$Q|Accu];
 
-encode_rfc4648_to_string0(_, _, _) ->
+encode_rfc4648_to_string0(_, _) ->
     {error, {fatal, rfc4648}}.
 
 -spec decode(base32_format(), base32_data()) ->
@@ -341,12 +337,4 @@ decode_rfc4648_0(<<"=", Next/bitstring>>, [<<24:5>>|Accu]) ->
 
 decode_rfc4648_0(_, _) ->
     {error, {fatal, rfc4648}}.
-
-rev_bits_list_to_binary(List) ->
-    rev_bits_list_to_binary0(List, <<>>).
-
-rev_bits_list_to_binary0([], Accu) ->
-    Accu;
-rev_bits_list_to_binary0([Bits|Next], Accu) ->
-    rev_bits_list_to_binary0(Next, <<Bits/bitstring, Accu/bitstring>>).
 
