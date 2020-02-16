@@ -13,10 +13,13 @@ encode_test() ->
     ?assertEqual(<<"MZXW6YTBOI======">>, encode(<<"foobar">>)).
 
 decode_test() ->
-    ?assertEqual(<<"f">>, decode(<<"MY======">>)),
-    ?assertEqual(<<"fo">>, decode(<<"MZXQ====">>)),
-    ?assertEqual(<<"foo">>, decode(<<"MZXW6===">>)),
-    ?assertEqual(<<"foob">>, decode(<<"MZXW6YQ=">>)),
-    ?assertEqual(<<"fooba">>, decode(<<"MZXW6YTB">>)),
-    ?assertEqual(<<"foobar">>, decode(<<"MZXW6YTBOI======">>)).
+    ?assertEqual({ok, <<"f">>}, decode(<<"MY======">>)),
+    ?assertEqual({ok, <<"fo">>}, decode(<<"MZXQ====">>)),
+    ?assertEqual({ok, <<"foo">>}, decode(<<"MZXW6===">>)),
+    ?assertEqual({ok, <<"foob">>}, decode(<<"MZXW6YQ=">>)),
+    ?assertEqual({ok, <<"fooba">>}, decode(<<"MZXW6YTB">>)),
+    ?assertEqual({ok, <<"foobar">>}, decode(<<"MZXW6YTBOI======">>)).
+
+decode_error_test() ->
+    ?assertEqual({error, invalid_format}, decode(<<"MZXW6YTBOI======A">>)).
 
