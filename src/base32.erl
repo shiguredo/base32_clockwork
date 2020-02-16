@@ -14,9 +14,9 @@ encode(crockford_check, Data) ->
 
 -spec decode(base32_format(), binary()) -> binary().
 decode(rfc4648, Data) ->
-    base32_rfc4648:decode(Data);
-decode(crockford, Data) ->
-    base32_crockford:decode(Data, false);
-decode(crockford_check, Data) ->
-    base32_crockford:decode(Data, true).
+    base32_rfc4648:decode(Data).
+%% decode(crockford, Data) ->
+%%     base32_crockford:decode(Data, false);
+%% decode(crockford_check, Data) ->
+%%     base32_crockford:decode(Data, true).
 
