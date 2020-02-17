@@ -156,12 +156,12 @@ encode1(<<0:1>>, Accu) ->
 encode1(<<1:1>>, Accu) ->
     [$Q|Accu].
 
--spec decode(binary()) -> binary().
+-spec decode(binary()) -> {ok, binary()} | {error, atom()}.
 decode(Data) ->
     decode0(Data, []).
 
 decode0(<<>>, Accu) ->
-    rev_bits_list_to_binary(Accu);
+    {ok, rev_bits_list_to_binary(Accu)};
 decode0(<<"A", Next/bitstring>>, Accu) ->
     decode0(Next, [<<0:5>>|Accu]);
 decode0(<<"B", Next/bitstring>>, Accu) ->
@@ -227,67 +227,69 @@ decode0(<<"6", Next/bitstring>>, Accu) ->
 decode0(<<"7", Next/bitstring>>, Accu) ->
     decode0(Next, [<<31:5>>|Accu]);
 
-decode0(<<"======", Next/bitstring>>, [<<0:5>>|Accu]) ->
-    decode0(Next, [<<0:3>>|Accu]);
-decode0(<<"======", Next/bitstring>>, [<<4:5>>|Accu]) ->
-    decode0(Next, [<<1:3>>|Accu]);
-decode0(<<"======", Next/bitstring>>, [<<8:5>>|Accu]) ->
-    decode0(Next, [<<2:3>>|Accu]);
-decode0(<<"======", Next/bitstring>>, [<<12:5>>|Accu]) ->
-    decode0(Next, [<<3:3>>|Accu]);
-decode0(<<"======", Next/bitstring>>, [<<16:5>>|Accu]) ->
-    decode0(Next, [<<4:3>>|Accu]);
-decode0(<<"======", Next/bitstring>>, [<<20:5>>|Accu]) ->
-    decode0(Next, [<<5:3>>|Accu]);
-decode0(<<"======", Next/bitstring>>, [<<24:5>>|Accu]) ->
-    decode0(Next, [<<6:3>>|Accu]);
-decode0(<<"======", Next/bitstring>>, [<<28:5>>|Accu]) ->
-    decode0(Next, [<<7:3>>|Accu]);
+decode0(<<"======">>, [<<0:5>>|Accu]) ->
+    decode0(<<>>, [<<0:3>>|Accu]);
+decode0(<<"======">>, [<<4:5>>|Accu]) ->
+    decode0(<<>>, [<<1:3>>|Accu]);
+decode0(<<"======">>, [<<8:5>>|Accu]) ->
+    decode0(<<>>, [<<2:3>>|Accu]);
+decode0(<<"======">>, [<<12:5>>|Accu]) ->
+    decode0(<<>>, [<<3:3>>|Accu]);
+decode0(<<"======">>, [<<16:5>>|Accu]) ->
+    decode0(<<>>, [<<4:3>>|Accu]);
+decode0(<<"======">>, [<<20:5>>|Accu]) ->
+    decode0(<<>>, [<<5:3>>|Accu]);
+decode0(<<"======">>, [<<24:5>>|Accu]) ->
+    decode0(<<>>, [<<6:3>>|Accu]);
+decode0(<<"======">>, [<<28:5>>|Accu]) ->
+    decode0(<<>>, [<<7:3>>|Accu]);
 
-decode0(<<"====", Next/bitstring>>, [<<0:5>>|Accu]) ->
-    decode0(Next, [<<0:1>>|Accu]);
-decode0(<<"====", Next/bitstring>>, [<<16:5>>|Accu]) ->
-    decode0(Next, [<<1:1>>|Accu]);
+decode0(<<"====">>, [<<0:5>>|Accu]) ->
+    decode0(<<>>, [<<0:1>>|Accu]);
+decode0(<<"====">>, [<<16:5>>|Accu]) ->
+    decode0(<<>>, [<<1:1>>|Accu]);
 
-decode0(<<"===", Next/bitstring>>, [<<0:5>>|Accu]) ->
-    decode0(Next, [<<0:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<2:5>>|Accu]) ->
-    decode0(Next, [<<1:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<4:5>>|Accu]) ->
-    decode0(Next, [<<2:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<6:5>>|Accu]) ->
-    decode0(Next, [<<3:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<8:5>>|Accu]) ->
-    decode0(Next, [<<4:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<10:5>>|Accu]) ->
-    decode0(Next, [<<5:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<12:5>>|Accu]) ->
-    decode0(Next, [<<6:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<14:5>>|Accu]) ->
-    decode0(Next, [<<7:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<16:5>>|Accu]) ->
-    decode0(Next, [<<8:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<18:5>>|Accu]) ->
-    decode0(Next, [<<9:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<20:5>>|Accu]) ->
-    decode0(Next, [<<10:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<22:5>>|Accu]) ->
-    decode0(Next, [<<11:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<24:5>>|Accu]) ->
-    decode0(Next, [<<12:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<26:5>>|Accu]) ->
-    decode0(Next, [<<13:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<28:5>>|Accu]) ->
-    decode0(Next, [<<14:4>>|Accu]);
-decode0(<<"===", Next/bitstring>>, [<<30:5>>|Accu]) ->
-    decode0(Next, [<<15:4>>|Accu]);
+decode0(<<"===">>, [<<0:5>>|Accu]) ->
+    decode0(<<>>, [<<0:4>>|Accu]);
+decode0(<<"===">>, [<<2:5>>|Accu]) ->
+    decode0(<<>>, [<<1:4>>|Accu]);
+decode0(<<"===">>, [<<4:5>>|Accu]) ->
+    decode0(<<>>, [<<2:4>>|Accu]);
+decode0(<<"===">>, [<<6:5>>|Accu]) ->
+    decode0(<<>>, [<<3:4>>|Accu]);
+decode0(<<"===">>, [<<8:5>>|Accu]) ->
+    decode0(<<>>, [<<4:4>>|Accu]);
+decode0(<<"===">>, [<<10:5>>|Accu]) ->
+    decode0(<<>>, [<<5:4>>|Accu]);
+decode0(<<"===">>, [<<12:5>>|Accu]) ->
+    decode0(<<>>, [<<6:4>>|Accu]);
+decode0(<<"===">>, [<<14:5>>|Accu]) ->
+    decode0(<<>>, [<<7:4>>|Accu]);
+decode0(<<"===">>, [<<16:5>>|Accu]) ->
+    decode0(<<>>, [<<8:4>>|Accu]);
+decode0(<<"===">>, [<<18:5>>|Accu]) ->
+    decode0(<<>>, [<<9:4>>|Accu]);
+decode0(<<"===">>, [<<20:5>>|Accu]) ->
+    decode0(<<>>, [<<10:4>>|Accu]);
+decode0(<<"===">>, [<<22:5>>|Accu]) ->
+    decode0(<<>>, [<<11:4>>|Accu]);
+decode0(<<"===">>, [<<24:5>>|Accu]) ->
+    decode0(<<>>, [<<12:4>>|Accu]);
+decode0(<<"===">>, [<<26:5>>|Accu]) ->
+    decode0(<<>>, [<<13:4>>|Accu]);
+decode0(<<"===">>, [<<28:5>>|Accu]) ->
+    decode0(<<>>, [<<14:4>>|Accu]);
+decode0(<<"===">>, [<<30:5>>|Accu]) ->
+    decode0(<<>>, [<<15:4>>|Accu]);
 
-decode0(<<"=", Next/bitstring>>, [<<0:5>>|Accu]) ->
-    decode0(Next, [<<0:2>>|Accu]);
-decode0(<<"=", Next/bitstring>>, [<<8:5>>|Accu]) ->
-    decode0(Next, [<<1:2>>|Accu]);
-decode0(<<"=", Next/bitstring>>, [<<16:5>>|Accu]) ->
-    decode0(Next, [<<2:2>>|Accu]);
-decode0(<<"=", Next/bitstring>>, [<<24:5>>|Accu]) ->
-    decode0(Next, [<<3:2>>|Accu]).
+decode0(<<"=">>, [<<0:5>>|Accu]) ->
+    decode0(<<>>, [<<0:2>>|Accu]);
+decode0(<<"=">>, [<<8:5>>|Accu]) ->
+    decode0(<<>>, [<<1:2>>|Accu]);
+decode0(<<"=">>, [<<16:5>>|Accu]) ->
+    decode0(<<>>, [<<2:2>>|Accu]);
+decode0(<<"=">>, [<<24:5>>|Accu]) ->
+    decode0(<<>>, [<<3:2>>|Accu]);
 
+decode0(_, _) ->
+    {error, invalid_format}.
