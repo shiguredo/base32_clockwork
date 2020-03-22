@@ -4,205 +4,106 @@
 
 -import(base32_utils, [rev_bits_list_to_binary/1]).
 
+data_to_integer(Data, Padding) ->
+    data_to_integer0(Data, Padding, 0).
+
+data_to_integer0(<<>>, _, N) ->
+    N;
+data_to_integer0(<<Bits:1>>, true, N) ->
+    (N bsl 5) bor (Bits bsl 4);
+data_to_integer0(<<Bits:2>>, true, N) ->
+    (N bsl 5) bor (Bits bsl 3);
+data_to_integer0(<<Bits:3>>, true, N) ->
+    (N bsl 5) bor (Bits bsl 2);
+data_to_integer0(<<Bits:4>>, true, N) ->
+    (N bsl 5) bor (Bits bsl 1);
+data_to_integer0(<<Bits:1>>, false, N) ->
+    (N bsl 1) bor Bits;
+data_to_integer0(<<Bits:2>>, false, N) ->
+    (N bsl 2) bor Bits;
+data_to_integer0(<<Bits:3>>, false, N) ->
+    (N bsl 3) bor Bits;
+data_to_integer0(<<Bits:4>>, false, N) ->
+    (N bsl 4) bor Bits;
+data_to_integer0(<<Bits:5, Next/bitstring>>, Padding, N) ->
+    data_to_integer0(Next, Padding, (N bsl 5) bor Bits).
+
 -spec encode(binary()) -> binary().
-encode(Data) ->
-    Encoded = encode0(Data, []),
-    list_to_binary(lists:reverse(Encoded)).
+encode(Data) when is_binary(Data) ->
+    encode(data_to_integer(Data, true));
+encode(Value) ->
+    Encoded = encode0(Value, []),
+    list_to_binary(Encoded).
 
 -spec encode_check(binary()) -> binary().
-encode_check(Data) ->
-    Encoded0 = encode0(Data, []),
-    Encoded1 = [checksum(Data)|Encoded0],
-    list_to_binary(lists:reverse(Encoded1)).
+encode_check(Data) when is_binary(Data) ->
+    Check = check_symbol(data_to_integer(Data, false)),
+    Encoded = encode0(data_to_integer(Data, true), [Check]),
+    list_to_binary(Encoded);
+encode_check(Value) ->
+    Check = check_symbol(Value),
+    Encoded = encode0(Value, [Check]),
+    list_to_binary(Encoded).
 
-encode0(<<>>, Accu) ->
+encode0(0, Accu) ->
     Accu;
-encode0(<<0:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$0|Accu]);
-encode0(<<1:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$1|Accu]);
-encode0(<<2:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$2|Accu]);
-encode0(<<3:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$3|Accu]);
-encode0(<<4:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$4|Accu]);
-encode0(<<5:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$5|Accu]);
-encode0(<<6:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$6|Accu]);
-encode0(<<7:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$7|Accu]);
-encode0(<<8:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$8|Accu]);
-encode0(<<9:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$9|Accu]);
-encode0(<<10:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$A|Accu]);
-encode0(<<11:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$B|Accu]);
-encode0(<<12:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$C|Accu]);
-encode0(<<13:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$D|Accu]);
-encode0(<<14:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$E|Accu]);
-encode0(<<15:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$F|Accu]);
-encode0(<<16:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$G|Accu]);
-encode0(<<17:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$H|Accu]);
-encode0(<<18:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$J|Accu]);
-encode0(<<19:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$K|Accu]);
-encode0(<<20:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$M|Accu]);
-encode0(<<21:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$N|Accu]);
-encode0(<<22:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$P|Accu]);
-encode0(<<23:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$Q|Accu]);
-encode0(<<24:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$R|Accu]);
-encode0(<<25:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$S|Accu]);
-encode0(<<26:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$T|Accu]);
-encode0(<<27:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$V|Accu]);
-encode0(<<28:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$W|Accu]);
-encode0(<<29:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$X|Accu]);
-encode0(<<30:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$Y|Accu]);
-encode0(<<31:5, Next/bitstring>>, Accu) ->
-    encode0(Next, [$Z|Accu]);
-encode0(<<0:4>>, Accu) ->
-    [$0|Accu];
-encode0(<<1:4>>, Accu) ->
-    [$2|Accu];
-encode0(<<2:4>>, Accu) ->
-    [$4|Accu];
-encode0(<<3:4>>, Accu) ->
-    [$6|Accu];
-encode0(<<4:4>>, Accu) ->
-    [$8|Accu];
-encode0(<<5:4>>, Accu) ->
-    [$A|Accu];
-encode0(<<6:4>>, Accu) ->
-    [$C|Accu];
-encode0(<<7:4>>, Accu) ->
-    [$E|Accu];
-encode0(<<8:4>>, Accu) ->
-    [$G|Accu];
-encode0(<<9:4>>, Accu) ->
-    [$J|Accu];
-encode0(<<10:4>>, Accu) ->
-    [$M|Accu];
-encode0(<<11:4>>, Accu) ->
-    [$P|Accu];
-encode0(<<12:4>>, Accu) ->
-    [$R|Accu];
-encode0(<<13:4>>, Accu) ->
-    [$T|Accu];
-encode0(<<14:4>>, Accu) ->
-    [$W|Accu];
-encode0(<<15:4>>, Accu) ->
-    [$Y|Accu];
-encode0(<<0:3>>, Accu) ->
-    [$0|Accu];
-encode0(<<1:3>>, Accu) ->
-    [$4|Accu];
-encode0(<<2:3>>, Accu) ->
-    [$8|Accu];
-encode0(<<3:3>>, Accu) ->
-    [$C|Accu];
-encode0(<<4:3>>, Accu) ->
-    [$G|Accu];
-encode0(<<5:3>>, Accu) ->
-    [$M|Accu];
-encode0(<<6:3>>, Accu) ->
-    [$R|Accu];
-encode0(<<7:3>>, Accu) ->
-    [$W|Accu];
-encode0(<<0:2>>, Accu) ->
-    [$0|Accu];
-encode0(<<1:2>>, Accu) ->
-    [$8|Accu];
-encode0(<<2:2>>, Accu) ->
-    [$G|Accu];
-encode0(<<3:2>>, Accu) ->
-    [$R|Accu];
-encode0(<<0:1>>, Accu) ->
-    [$0|Accu];
-encode0(<<1:1>>, Accu) ->
-    [$G|Accu].
+encode0(Value, Accu) ->
+    Next = Value div 32,
+    SymVal = Value rem 32,
+    encode0(Next, [symbol(SymVal)|Accu]).
 
--spec checksum(binary()) -> char().
-checksum(Data) ->
-    number_to_checksum(binary_to_number(Data, 0)).
+check_symbol(Value) ->
+    symbol(Value rem 37).
 
-binary_to_number(<<>>, N) ->
-    N;
-binary_to_number(<<Byte:8, Next/bitstring>>, N) ->
-    binary_to_number(Next, (N bsl 8) bor Byte).
-
-number_to_checksum(N) ->
-    case N rem 37 of
-        0 -> $0;
-        1 -> $1;
-        2 -> $2;
-        3 -> $3;
-        4 -> $4;
-        5 -> $5;
-        6 -> $6;
-        7 -> $7;
-        8 -> $8;
-        9 -> $9;
-        10 -> $A;
-        11 -> $B;
-        12 -> $C;
-        13 -> $D;
-        14 -> $E;
-        15 -> $F;
-        16 -> $G;
-        17 -> $H;
-        18 -> $J;
-        19 -> $K;
-        20 -> $M;
-        21 -> $N;
-        22 -> $P;
-        23 -> $Q;
-        24 -> $R;
-        25 -> $S;
-        26 -> $T;
-        27 -> $V;
-        28 -> $W;
-        29 -> $X;
-        30 -> $Y;
-        31 -> $Z;
-        32 -> $*;
-        33 -> $~;
-        34 -> $$;
-        35 -> $=;
-        36 -> $U
-    end.
+symbol(0) -> $0;
+symbol(1) -> $1;
+symbol(2) -> $2;
+symbol(3) -> $3;
+symbol(4) -> $4;
+symbol(5) -> $5;
+symbol(6) -> $6;
+symbol(7) -> $7;
+symbol(8) -> $8;
+symbol(9) -> $9;
+symbol(10) -> $A;
+symbol(11) -> $B;
+symbol(12) -> $C;
+symbol(13) -> $D;
+symbol(14) -> $E;
+symbol(15) -> $F;
+symbol(16) -> $G;
+symbol(17) -> $H;
+symbol(18) -> $J;
+symbol(19) -> $K;
+symbol(20) -> $M;
+symbol(21) -> $N;
+symbol(22) -> $P;
+symbol(23) -> $Q;
+symbol(24) -> $R;
+symbol(25) -> $S;
+symbol(26) -> $T;
+symbol(27) -> $V;
+symbol(28) -> $W;
+symbol(29) -> $X;
+symbol(30) -> $Y;
+symbol(31) -> $Z;
+symbol(32) -> $*;
+symbol(33) -> $~;
+symbol(34) -> $$;
+symbol(35) -> $=;
+symbol(36) -> $U.
 
 -spec decode(binary()) -> binary().
-decode(Data) ->
+decode(Data) when is_binary(Data) ->
     decode0(Data, []).
 
 -spec decode_check(binary()) -> {ok, binary()} | {error, atom()}.
 decode_check(Data) ->
     Size = (size(Data) - 1) * 8,
-    <<Data0:Size/bitstring, ExpectedCheckSum:8>> = Data,
+    <<Data0:Size/bitstring, Expectedcheck:8>> = Data,
     Decoded = decode(Data0),
-    CheckSum = checksum(Decoded),
-    case CheckSum =:= ExpectedCheckSum of
+    Check = check_symbol(data_to_integer(Decoded, false)),
+    case Check =:= Expectedcheck of
         true -> {ok, Decoded};
         false -> {error, invalid}
     end.
