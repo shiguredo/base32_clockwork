@@ -2,12 +2,16 @@
 
 ## develop
 
+## 2020.1.1
+
+- [UPDATE] Crockford 版を数値計算で再実装
+    - @szktty
+
 ## 2020.1
 
 **YYYY.RELEASE[.FIX] にバージョン番号表記を変更**
 
-- [UPDATE] Crockford 版を数値計算で再実装
-    - @szktty
+リリースミス
 
 ## 1.1.0
 
