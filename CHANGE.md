@@ -2,6 +2,9 @@
 
 ## develop
 
+- [FIX] Crockford's Base32: エンコード後の文字列の先頭が "0" であるべき場合に "0" が抜け落ちる事象を修正する
+    - @szktty
+
 ## 2020.1.1
 
 - [UPDATE] Crockford 版を数値計算で再実装
