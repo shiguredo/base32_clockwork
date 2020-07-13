@@ -1,15 +1,20 @@
-base32
-=====
+# base32
 
-An OTP library
-
-Build
------
+## ビルド
 
     $ rebar3 compile
 
-License
--------
+## 利用
+
+```erlang
+$ rebar3 shell
+1> base32:decode(crockford, <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>).
+<<"Wow, it really works!">>
+2> base32:encode(crockford, <<"Wow, it really works!">>).
+<<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>
+```
+
+## ライセンス
 
 ```
 Copyright 2020, Shiguredo Inc.
