@@ -53,5 +53,13 @@ other1_test() ->
     P = <<1,221,62,98,254,21,78,215,43,109,45,36,57,116,102,157>>,
     E = <<"07EKWRQY2N7DEAVD5MJ3JX36KM">>,
     ?assertEqual(E, encode(P)),
-    ?assertEqual(P, decode(E)).
+    ?assertEqual(P, decode(E)),
+    ok.
 
+other2_test() ->
+    %% https://github.com/aiq/basexx/blob/master/test/crockford_spec.lua
+    P = <<"Wow, it really works!">>,
+    E = <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>,
+    ?assertEqual(E, encode(P)),
+    ?assertEqual(P, decode(E)),
+    ok.
