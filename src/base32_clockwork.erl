@@ -52,12 +52,7 @@ symbol(27) -> $V;
 symbol(28) -> $W;
 symbol(29) -> $X;
 symbol(30) -> $Y;
-symbol(31) -> $Z;
-symbol(32) -> $*;
-symbol(33) -> $~;
-symbol(34) -> $$;
-symbol(35) -> $=;
-symbol(36) -> $U.
+symbol(31) -> $Z.
 
 -spec decode(binary()) -> {ok, binary()} | {error, atom()}.
 decode(Data) ->
