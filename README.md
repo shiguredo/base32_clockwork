@@ -1,9 +1,10 @@
 # base32
 
-Erlang 向けの Base32 ライブラリです。 RFC 4648 と Crockford 形式に対応しています。
+Erlang 向けの Base32 ライブラリです。次の種類のバージョンに対応しています。
 
 - [RFC 4648 \- The Base16, Base32, and Base64 Data Encodings](https://tools.ietf.org/html/rfc4648)
-- [Base 32](https://www.crockford.com/base32.html)
+- [Crockford's Base 32](https://www.crockford.com/base32.html)
+- Clockwork Base32: Crockford's Base32 をシンプルにしたバージョンです。
 
 ## ビルド
 
@@ -12,6 +13,8 @@ $ rebar3 compile
 ```
 
 ## 利用
+
+例:
 
 ```shell
 $ rebar3 shell
