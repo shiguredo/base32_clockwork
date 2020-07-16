@@ -1,15 +1,27 @@
-base32
-=====
+# base32
 
-An OTP library
+Erlang 向けの Base32 ライブラリです。 RFC 4648 と Crockford 形式に対応しています。
 
-Build
------
+- [RFC 4648 \- The Base16, Base32, and Base64 Data Encodings](https://tools.ietf.org/html/rfc4648)
+- [Base 32](https://www.crockford.com/base32.html)
 
-    $ rebar3 compile
+## ビルド
 
-License
--------
+```shell
+$ rebar3 compile
+```
+
+## 利用
+
+```shell
+$ rebar3 shell
+1> base32:decode(crockford, <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>).
+<<"Wow, it really works!">>
+2> base32:encode(crockford, <<"Wow, it really works!">>).
+<<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>
+```
+
+## ライセンス
 
 ```
 Copyright 2020, Shiguredo Inc.

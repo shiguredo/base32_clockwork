@@ -28,9 +28,7 @@ data_to_integer0(<<Bits:4>>, false, N) ->
 data_to_integer0(<<Bits:5, Next/bitstring>>, Padding, N) ->
     data_to_integer0(Next, Padding, (N bsl 5) bor Bits).
 
--spec encode(binary()) -> binary().
-encode(Data) when is_binary(Data) ->
-    encode(data_to_integer(Data, true));
+-spec encode(binary() | integer()) -> binary().
 encode(Value) ->
     Encoded = encode0(Value, []),
     list_to_binary(Encoded).
@@ -38,19 +36,35 @@ encode(Value) ->
 -spec encode_check(binary()) -> binary().
 encode_check(Data) when is_binary(Data) ->
     Check = check_symbol(data_to_integer(Data, false)),
-    Encoded = encode0(data_to_integer(Data, true), [Check]),
+    Encoded = encode0(Data, [Check]),
     list_to_binary(Encoded);
 encode_check(Value) ->
     Check = check_symbol(Value),
     Encoded = encode0(Value, [Check]),
     list_to_binary(Encoded).
 
-encode0(0, Accu) ->
-    Accu;
+encode0(Data, Accu) when is_binary(Data) ->
+    Size = size(Data) * 8,
+    BaseCount = Size div 5,
+    Count = case Size rem 5 of
+                0 -> BaseCount;
+                _ -> BaseCount + 1
+            end,
+    encode1(data_to_integer(Data, true), Count, Accu);
 encode0(Value, Accu) ->
+    BaseCount = Value div 32,
+    Count = case Value rem 32 of
+                0 -> BaseCount;
+                _ -> BaseCount + 1
+            end,
+    encode1(Value, Count, Accu).
+
+encode1(_, 0, Accu) ->
+    Accu;
+encode1(Value, Count, Accu) ->
     Next = Value div 32,
     SymVal = Value rem 32,
-    encode0(Next, [symbol(SymVal)|Accu]).
+    encode1(Next, Count - 1, [symbol(SymVal)|Accu]).
 
 check_symbol(Value) ->
     symbol(Value rem 37).
