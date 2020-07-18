@@ -18,11 +18,18 @@ $ rebar3 compile
 
 ```shell
 $ rebar3 shell
-1> base32:decode(crockford, <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>).
+1> base32:decode(clockwork, <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>).
 <<"Wow, it really works!">>
-2> base32:encode(crockford, <<"Wow, it really works!">>).
+2> base32:encode(clockwork, <<"Wow, it really works!">>).
 <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>
 ```
+
+エンコード方式の種類:
+
+- `rfc4648`: RFC 4648
+- `crockford`: Crockford's Base32
+- `crockford_check`: Crockford's Base32 (チェックサムつき)
+- `clockwork`: Clockwork Base32
 
 ## ライセンス
 
