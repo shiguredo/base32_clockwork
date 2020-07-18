@@ -4,7 +4,7 @@ Erlang 向けの Base32 ライブラリです。次の種類のバージョン�
 
 - [RFC 4648 \- The Base16, Base32, and Base64 Data Encodings](https://tools.ietf.org/html/rfc4648)
 - [Crockford's Base 32](https://www.crockford.com/base32.html)
-- Clockwork Base32: Crockford's Base32 をシンプルにしたバージョンです。
+- [Clockwork Base32](https://gist.github.com/szktty/228f85794e4187882a77734c89c384a8): Crockford's Base32 をシンプルにしたバージョンです。
 
 ## ビルド
 
