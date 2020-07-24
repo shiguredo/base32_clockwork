@@ -2,6 +2,11 @@
 
 ## develop
 
+## 2020.2
+
+- [CHANGE] Clockwork Base32 を実装する
+    - @szktty
+
 ## 2020.1.2
 
 - [FIX] Crockford's Base32: エンコード後の文字列の先頭が "0" であるべき場合に "0" が抜け落ちる事象を修正する
