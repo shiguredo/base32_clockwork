@@ -1,6 +1,6 @@
 {application, base32,
  [{description, "base32"},
-  {vsn, "2020.1.2"},
+  {vsn, "2020.2"},
   {registered, []},
   {applications,
    [

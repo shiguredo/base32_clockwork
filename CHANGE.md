@@ -2,6 +2,8 @@
 
 ## develop
 
+## 2020.2
+
 - [CHANGE] Clockwork Base32 を実装する
     - @szktty
 
