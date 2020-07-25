@@ -34,6 +34,7 @@ $ rebar3 shell
 ## ライセンス
 
 ```
+Copyright 2020, SUZUKI Tetsuya (Original Author)
 Copyright 2020, Shiguredo Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
