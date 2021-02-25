@@ -2,6 +2,9 @@
 
 ## develop
 
+- [FIX] `base32:decode(clockwork, _)` が Crockford になっていた問題を修正する
+    - @shino
+
 ## 2020.2
 
 - [CHANGE] Clockwork Base32 を実装する

@@ -23,5 +23,5 @@ decode(crockford, Data) ->
 decode(crockford_check, Data) ->
     base32_crockford:decode_check(Data);
 decode(clockwork, Data) ->
-    base32_crockford:decode(Data).
+    base32_clockwork:decode(Data).
 
