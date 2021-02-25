@@ -4,6 +4,8 @@
 
 - [FIX] `base32:decode(clockwork, _)` が Crockford になっていた問題を修正する
     - @shino
+- [CHANGE] `base32:decode(crockford, _)` が Binary を返していたため `{ok, Binary}` に変更する
+    - @shino
 
 ## 2020.2
 

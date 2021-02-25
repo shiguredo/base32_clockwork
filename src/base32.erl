@@ -19,7 +19,7 @@ encode(clockwork, Data) ->
 decode(rfc4648, Data) ->
     base32_rfc4648:decode(Data);
 decode(crockford, Data) ->
-    base32_crockford:decode(Data);
+    {ok, base32_crockford:decode(Data)};
 decode(crockford_check, Data) ->
     base32_crockford:decode_check(Data);
 decode(clockwork, Data) ->
