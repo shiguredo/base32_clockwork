@@ -16,7 +16,7 @@ $ rebar3 compile
 
 例:
 
-```shell
+```
 $ rebar3 shell
 1> base32:decode(clockwork, <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>).
 <<"Wow, it really works!">>
@@ -34,6 +34,7 @@ $ rebar3 shell
 ## ライセンス
 
 ```
+Copyright 2020, SUZUKI Tetsuya (Original Author)
 Copyright 2020, Shiguredo Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");

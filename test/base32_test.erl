@@ -14,7 +14,7 @@ rfc4648_test() ->
 crockford_nocheck_test() ->
     Data = <<"foobar">>,
     Encoded = encode(crockford, Data),
-    Decoded = decode(crockford, Encoded),
+    {ok, Decoded} = decode(crockford, Encoded),
     ?assertEqual(Encoded, base32_crockford:encode(Data)),
     ?assertEqual(Decoded, base32_crockford:decode(Encoded)).
 
