@@ -16,4 +16,3 @@ clean:
 
 test: compile
 	rebar3 eunit
-
