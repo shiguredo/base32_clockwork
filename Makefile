@@ -1,18 +1,23 @@
-.PHONY: doc
+.PHONY: all upgrade compile test dialyzer clean github
 
-all:
-	rebar3 compile
-	rebar3 xref
-	rebar3 eunit
+all: clean upgrade compile test dialyzer
+
+upgrade:
+	@./rebar3 do update, upgrade
 
 compile:
-	rebar3 compile
+	@./rebar3 xref
 
-xref: compile
-	rebar3 xref
+test:
+	@./rebar3 as test eunit, cover
+
+dialyzer:
+	@./rebar3 dialyzer
 
 clean:
-	rebar3 clean
+	@./rebar3 clean
 
-test: compile
-	rebar3 eunit
+github:
+	$(MAKE) compile
+	$(MAKE) dialyzer
+	$(MAKE) test
