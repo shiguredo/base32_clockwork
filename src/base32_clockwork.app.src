@@ -10,5 +10,5 @@
   {env,[]},
   {modules, []},
   {licenses, ["Apache License, Version 2.0"]},
-  {links, [{"GitHub", "https://github.com/shiguredo/base32_clockwork"}]},
+  {links, [{"GitHub", "https://github.com/shiguredo/base32_clockwork"}]}
  ]}.
