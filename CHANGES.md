@@ -2,6 +2,14 @@
 
 ## develop
 
+## 2021.2.0
+
+- [ADD] rebar3 hex plugin を追加する
+- [ADD] rebar3 3.17.0 を追加する
+    - @voluntas
+- [CHANGE] 最小 OTP を 24.1 に上げる
+    - @voluntas
+
 ## 2021.1
 
 - [FIX] `base32:decode(clockwork, _)` が Crockford になっていた問題を修正する
