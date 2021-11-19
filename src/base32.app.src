@@ -1,5 +1,6 @@
-{application, base32_clockwork,
+{application, base32,
  [{description, "Clockwork Base32"},
+  {pkg_name, base32_clockwork},
   {vsn, "2021.2.0"},
   {registered, []},
   {applications,
