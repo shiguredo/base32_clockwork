@@ -2,6 +2,11 @@
 
 ## develop
 
+## 2021.3.0
+
+- [CHANGE] applicaiton を base32 に戻す
+- [ADD] pkg_name を base32_clockwork にする
+
 ## 2021.2.0
 
 - [ADD] rebar3 hex plugin を追加する
