@@ -24,7 +24,13 @@ $ rebar3 shell
 <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>
 ```
 
-エンコード方式の種類:
+## rebar3 deps
+
+```erlang
+{deps, [{base32, "2021.3.0", {pkg, base32_clockwork}}]}.
+```
+
+## エンコード方式の種類
 
 - `rfc4648`: RFC 4648
 - `crockford`: Crockford's Base32
