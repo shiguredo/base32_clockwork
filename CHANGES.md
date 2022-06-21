@@ -2,9 +2,14 @@
 
 ## develop
 
-- [CHANGE] rebar3 の minimum_otp_vsn を 24.2 にする
-- [UPDATE] GitHub Actions の docker の OTP を 24.2 に上げる
+- [CHANGE] rebar3 の minimum_otp_vsn を 25.0 にする
+    - @voluntas
+- [UPDATE] GitHub Actions の docker の OTP を 25.0 に上げる
+    - @voluntas
 - [ADD] slack 通知を secrets.SLACK_INTERNAL_CHANNEL に変更
+    - @voluntas
+- [ADD] rebar3 3.19.0 を追加する
+    - @voluntas
 
 ## 2021.3.0
 
