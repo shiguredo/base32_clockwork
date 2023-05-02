@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  push:
+    paths-ignore:
+      - "doc/**"
+      - "**.rst"
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    container:
+      image: shiguredo/erlang:otp-26.0-rc3-openssl-3.1.0-ubuntu-22.04-x86_64
+    env:
+      ERL_FLAGS: -enable-feature maybe_expr
+    steps:
+      - uses: actions/checkout@v3
+      - run: make
+      - name: Slack Notification
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: ${{ secrets.SLACK_INTERNAL_CHANNEL }}
+          SLACK_COLOR: danger
+          SLACK_TITLE: Failure test
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
