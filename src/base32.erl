@@ -4,6 +4,7 @@
 
 -type base32_format() :: rfc4648 | crockford | crockford_check | clockwork.
 
+
 -spec encode(base32_format(), binary()) -> binary().
 encode(rfc4648, Data) ->
     base32_rfc4648:encode(Data);
@@ -14,8 +15,9 @@ encode(crockford_check, Data) ->
 encode(clockwork, Data) ->
     base32_clockwork:encode(Data).
 
+
 -spec decode(base32_format(), binary()) ->
-    {ok, binary()} | {error, atom()}.
+          {ok, binary()} | {error, atom()}.
 decode(rfc4648, Data) ->
     base32_rfc4648:decode(Data);
 decode(crockford, Data) ->
@@ -24,4 +26,3 @@ decode(crockford_check, Data) ->
     base32_crockford:decode_check(Data);
 decode(clockwork, Data) ->
     base32_clockwork:decode(Data).
-

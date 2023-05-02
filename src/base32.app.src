@@ -4,12 +4,9 @@
   {vsn, "2021.3.0"},
   {registered, []},
   {applications,
-   [
-    kernel,
-    stdlib
-   ]},
-  {env,[]},
+   [kernel,
+    stdlib]},
+  {env, []},
   {modules, []},
   {licenses, ["Apache-2.0"]},
-  {links, [{"GitHub", "https://github.com/shiguredo/base32_clockwork"}]}
- ]}.
+  {links, [{"GitHub", "https://github.com/shiguredo/base32_clockwork"}]}]}.
