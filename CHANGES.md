@@ -2,6 +2,10 @@
 
 ## develop
 
+## 2023.1.0
+
+日付: 2023-05-02
+
 - [ADD] hex_efmt と hex_elvis を追加する
   - @voluntas
 - [CHANGE] efmt を適用する
