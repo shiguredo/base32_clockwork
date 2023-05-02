@@ -27,7 +27,7 @@ $ rebar3 shell
 ## rebar3 deps
 
 ```erlang
-{deps, [{base32, "2021.3.0", {pkg, base32_clockwork}}]}.
+{deps, [{base32, "2023.1.0", {pkg, base32_clockwork}}]}.
 ```
 
 ## エンコード方式の種類
