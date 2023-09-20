@@ -2,7 +2,9 @@
 
 ## develop
 
-- [ADD] rebar3 3.22.1 に更新する
+- [UPDATE] rebar3 3.22.1 に更新する
+  - @voluntas
+- [UPDATE] GitHub Actions の docker の OTP を 26.0.2 / OpenSSL 3.1.2 に上げる
   - @voluntas
 
 ## 2023.1.0
