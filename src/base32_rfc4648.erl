@@ -2,8 +2,6 @@
 
 -export([encode/1, decode/1]).
 
--import(base32_utils, [rev_bits_list_to_binary/1]).
-
 
 -spec encode(binary()) -> binary().
 encode(Data) ->
@@ -160,13 +158,13 @@ encode1(<<1:1>>, Accu) ->
     [$Q | Accu].
 
 
--spec decode(binary()) -> {ok, binary()} | {error, atom()}.
+-spec decode(binary()) -> {ok, binary()} | {error, invalid_format}.
 decode(Data) ->
     decode0(Data, []).
 
 
 decode0(<<>>, Accu) ->
-    {ok, rev_bits_list_to_binary(Accu)};
+    {ok, base32_utils:rev_bits_list_to_binary(Accu)};
 decode0(<<"A", Next/bitstring>>, Accu) ->
     decode0(Next, [<<0:5>> | Accu]);
 decode0(<<"B", Next/bitstring>>, Accu) ->

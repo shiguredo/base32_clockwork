@@ -8,15 +8,15 @@ Erlang 向けの Base32 ライブラリです。次の種類のバージョン�
 
 ## ビルド
 
-```shell
-$ rebar3 compile
+```bash
+rebar3 compile
 ```
 
 ## 利用
 
 例:
 
-```
+```bash
 $ rebar3 shell
 1> base32:decode(clockwork, <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>).
 <<"Wow, it really works!">>
@@ -39,8 +39,8 @@ $ rebar3 shell
 
 ## ライセンス
 
-```
-Copyright 2021-2023, Shiguredo Inc.
+```text
+Copyright 2021-2024, Shiguredo Inc.
 Copyright 2021, SUZUKI Tetsuya (Original Author)
 
 Licensed under the Apache License, Version 2.0 (the "License");

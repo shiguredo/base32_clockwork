@@ -2,9 +2,13 @@
 
 ## develop
 
-- [UPDATE] rebar3 3.22.1 に更新する
+- [CHANGE] rebar3 の minimum_otp_vsn を 27.0 にする
   - @voluntas
-- [UPDATE] GitHub Actions の docker の OTP を 26.0.2 / OpenSSL 3.1.2 に上げる
+- [UPDATE] rebar3 3.23.0 に更新する
+  - @voluntas
+- [UPDATE] GitHub Actions の docker の OTP を 27.0.1 / OpenSSL 3.3.1 に上げる
+  - @voluntas
+- [FIX] import を利用しないようにする
   - @voluntas
 
 ## 2023.1.0

@@ -2,8 +2,6 @@
 
 -export([encode/1, encode_check/1, decode/1, decode_check/1]).
 
--import(base32_utils, [rev_bits_list_to_binary/1]).
-
 
 data_to_integer(Data, Padding) ->
     data_to_integer0(Data, Padding, 0).
@@ -121,7 +119,7 @@ decode(Data) when is_binary(Data) ->
     decode0(Data, []).
 
 
--spec decode_check(binary()) -> {ok, binary()} | {error, atom()}.
+-spec decode_check(binary()) -> {ok, binary()} | {error, invalid}.
 decode_check(Data) ->
     Size = (size(Data) - 1) * 8,
     <<Data0:Size/bitstring, Expectedcheck:8>> = Data,
@@ -134,7 +132,7 @@ decode_check(Data) ->
 
 
 decode0(<<>>, Accu) ->
-    Decoded0 = rev_bits_list_to_binary(Accu),
+    Decoded0 = base32_utils:rev_bits_list_to_binary(Accu),
     DecodedSize = bit_size(Decoded0),
     case DecodedSize rem 8 of
         0 ->

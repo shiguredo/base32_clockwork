@@ -2,8 +2,6 @@
 
 -export([encode/1, decode/1]).
 
--import(base32_utils, [rev_bits_list_to_binary/1, bits_list_size/1]).
-
 
 -spec encode(binary()) -> binary().
 encode(Data) ->
@@ -58,7 +56,7 @@ symbol(30) -> $Y;
 symbol(31) -> $Z.
 
 
--spec decode(binary()) -> {ok, binary()} | {error, atom()}.
+-spec decode(binary()) -> {ok, binary()} | {error, invalid_size | invalid_format}.
 decode(Data) ->
     decode0(Data, []).
 
@@ -66,7 +64,7 @@ decode(Data) ->
 decode0(<<>>, []) ->
     {ok, <<>>};
 decode0(<<>>, Accu = [Last | Prev]) ->
-    Size = bits_list_size(Accu),
+    Size = base32_utils:bits_list_size(Accu),
     Last1 = case Size rem 8 of
                 0 ->
                     Last;
@@ -75,7 +73,7 @@ decode0(<<>>, Accu = [Last | Prev]) ->
                     <<Last2:BodySize/bitstring, _/bitstring>> = Last,
                     Last2
             end,
-    {ok, rev_bits_list_to_binary([Last1 | Prev])};
+    {ok, base32_utils:rev_bits_list_to_binary([Last1 | Prev])};
 decode0(<<_:8>>, []) ->
     {error, invalid_size};
 decode0(<<"0", Next/binary>>, Accu) ->
