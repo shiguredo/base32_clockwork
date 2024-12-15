@@ -2,16 +2,20 @@
 
 ## develop
 
-- [CHANGE] rebar3 の minimum_otp_vsn を 27.0 にする
+### misc
+
+- [CHANGE] rebar3 の minimum_otp_vsn を 27.2 にする
   - @voluntas
 - [ADD] PBT を追加
   - clockwork のみ
   - @voluntas
-- [UPDATE] rebar3 3.23.0 に更新する
+- [UPDATE] rebar3 3.24.0 に更新する
   - @voluntas
-- [UPDATE] GitHub Actions の docker の OTP を 27.0.1 / OpenSSL 3.3.1 に上げる
+- [UPDATE] GitHub Actions の docker の OTP を 27.2 / OpenSSL 3.4.0 に上げる
   - @voluntas
 - [FIX] import を利用しないようにする
+  - @voluntas
+- [UPDATE] CI の OTP を 27.2 に上げる
   - @voluntas
 
 ## 2023.1.0
