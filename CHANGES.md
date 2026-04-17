@@ -9,7 +9,7 @@
 - [ADD] PBT を追加
   - clockwork のみ
   - @voluntas
-- [UPDATE] rebar3 3.24.0 に更新する
+- [UPDATE] rebar3 3.25.1 に更新する
   - @voluntas
 - [UPDATE] GitHub Actions のコンテナイメージを OTP を 27.3.4 / OpenSSL 3.5.0 に上げる
   - @voluntas
