@@ -4,6 +4,8 @@
 
 ### misc
 
+- [CHANGE] Slack 通知を shiguredo/github-actions の composite action (slack-notify) に移行する
+  - @voluntas
 - [CHANGE] rebar3 の minimum_otp_vsn を 27.3 にする
   - @voluntas
 - [ADD] PBT を追加
@@ -11,11 +13,11 @@
   - @voluntas
 - [UPDATE] rebar3 3.25.1 に更新する
   - @voluntas
-- [UPDATE] GitHub Actions のコンテナイメージを OTP を 27.3.4 / OpenSSL 3.5.0 に上げる
+- [UPDATE] GitHub Actions のコンテナイメージを OTP 28.4.2 / OpenSSL 3.6.2 / Ubuntu 26.04 に上げる
   - @voluntas
 - [FIX] import を利用しないようにする
   - @voluntas
-- [UPDATE] CI の OTP を 27.3.4 に上げる
+- [UPDATE] CI の OTP を 28.4.2 に上げる
   - @voluntas
 
 ## 2023.1.0
