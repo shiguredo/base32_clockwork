@@ -1,4 +1,4 @@
-.PHONY: all upgrade compile dialyzer test proper clean ci publish
+.PHONY: all upgrade compile dialyzer test proper efmt-check clean ci publish
 
 all: clean upgrade compile dialyzer test proper
 
@@ -16,6 +16,9 @@ test:
 
 proper:
 	@./rebar3 as test proper
+
+efmt-check:
+	@RUST_LOG=warn efmt --check --parallel --check-line-length 120
 
 clean:
 	@./rebar3 clean

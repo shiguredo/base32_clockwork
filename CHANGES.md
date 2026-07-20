@@ -8,6 +8,8 @@
   - @voluntas
 - [CHANGE] rebar3 の minimum_otp_vsn を 27.3 にする
   - @voluntas
+- [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、スタンドアロン efmt による `make efmt-check` と CI の `efmt` ジョブに切り替える
+  - @voluntas
 - [ADD] PBT を追加
   - clockwork のみ
   - @voluntas
