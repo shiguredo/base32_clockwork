@@ -250,7 +250,7 @@ Shiguredo Inc.
   - shogo82148/go-clockwork-base32
   - mganeko/as_clockwork_base32
   - hnakamur/rs-clockwork-base32
-  
+
 **2020-08-11**
 
 - [CHANGE] Added ["Uses"](#uses) section.
@@ -260,12 +260,12 @@ Shiguredo Inc.
 - [CHANGE] Added a reference implementation.
   - szktty/swift-clockwork-base32
 - [CHANGE] Added some links.
-  
+
 **2020-07-30**
 
 - [CHANGE] Added a reference implementation.
   - szktty/c-clockwork-base32
-  
+
 **2020-07-27**
 
 - Released 2020.2.
@@ -282,7 +282,7 @@ Shiguredo Inc.
   - wx257osn2/clockwork_base32_cxx
   - objectx/cpp-clockwork-base32
   - mganeko/js_clockwork_base32
-  
+
 **2020-07-22**
 
 - [CHANGE] Added RFC 4648 to the comparison table of specification.

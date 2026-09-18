@@ -4,11 +4,13 @@
 
 ### misc
 
+- [CHANGE] GitHub Actions のコンテナイメージをやめて shiguredo/setup-erlang で Erlang/OTP 29.0.6 / AWS-LC v5.8.0 をセットアップし、`minimum_otp_vsn` を 29.0 にする
+  - @voluntas
+- [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、prek (`prek.toml`) 経由の efmt / elint (`shiguredo/erlang-pre-commit` 2026.4.0) に切り替える
+  - CI は `j178/prek-action` で `prek.toml` のフックを実行する
+  - elint の newline_after_arrow に合わせて symbol/1 と case 節を整形する
+  - @voluntas
 - [CHANGE] Slack 通知を shiguredo/github-actions の composite action (slack-notify) に移行する
-  - @voluntas
-- [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、スタンドアロン efmt による `make efmt-check` と CI の `efmt` ジョブに切り替える
-  - @voluntas
-- [CHANGE] GitHub Actions のコンテナイメージを OTP 29.0.2 / AWS-LC 5.2.0 / Ubuntu 26.04 に上げ、`minimum_otp_vsn` を 29.0 にする
   - @voluntas
 - [ADD] PBT を追加
   - clockwork のみ

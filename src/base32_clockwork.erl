@@ -22,38 +22,70 @@ encode0(<<Bits:1, Next/bitstring>>, Accu) ->
     encode0(Next, [symbol(Bits bsl 4) | Accu]).
 
 
-symbol(0) -> $0;
-symbol(1) -> $1;
-symbol(2) -> $2;
-symbol(3) -> $3;
-symbol(4) -> $4;
-symbol(5) -> $5;
-symbol(6) -> $6;
-symbol(7) -> $7;
-symbol(8) -> $8;
-symbol(9) -> $9;
-symbol(10) -> $A;
-symbol(11) -> $B;
-symbol(12) -> $C;
-symbol(13) -> $D;
-symbol(14) -> $E;
-symbol(15) -> $F;
-symbol(16) -> $G;
-symbol(17) -> $H;
-symbol(18) -> $J;
-symbol(19) -> $K;
-symbol(20) -> $M;
-symbol(21) -> $N;
-symbol(22) -> $P;
-symbol(23) -> $Q;
-symbol(24) -> $R;
-symbol(25) -> $S;
-symbol(26) -> $T;
-symbol(27) -> $V;
-symbol(28) -> $W;
-symbol(29) -> $X;
-symbol(30) -> $Y;
-symbol(31) -> $Z.
+symbol(0) ->
+    $0;
+symbol(1) ->
+    $1;
+symbol(2) ->
+    $2;
+symbol(3) ->
+    $3;
+symbol(4) ->
+    $4;
+symbol(5) ->
+    $5;
+symbol(6) ->
+    $6;
+symbol(7) ->
+    $7;
+symbol(8) ->
+    $8;
+symbol(9) ->
+    $9;
+symbol(10) ->
+    $A;
+symbol(11) ->
+    $B;
+symbol(12) ->
+    $C;
+symbol(13) ->
+    $D;
+symbol(14) ->
+    $E;
+symbol(15) ->
+    $F;
+symbol(16) ->
+    $G;
+symbol(17) ->
+    $H;
+symbol(18) ->
+    $J;
+symbol(19) ->
+    $K;
+symbol(20) ->
+    $M;
+symbol(21) ->
+    $N;
+symbol(22) ->
+    $P;
+symbol(23) ->
+    $Q;
+symbol(24) ->
+    $R;
+symbol(25) ->
+    $S;
+symbol(26) ->
+    $T;
+symbol(27) ->
+    $V;
+symbol(28) ->
+    $W;
+symbol(29) ->
+    $X;
+symbol(30) ->
+    $Y;
+symbol(31) ->
+    $Z.
 
 
 -spec decode(binary()) -> {ok, binary()} | {error, invalid_size | invalid_format}.

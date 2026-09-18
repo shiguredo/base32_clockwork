@@ -50,15 +50,19 @@ encode0(Data, Accu) when is_binary(Data) ->
     Size = size(Data) * 8,
     BaseCount = Size div 5,
     Count = case Size rem 5 of
-                0 -> BaseCount;
-                _ -> BaseCount + 1
+                0 ->
+                    BaseCount;
+                _ ->
+                    BaseCount + 1
             end,
     encode1(data_to_integer(Data, true), Count, Accu);
 encode0(Value, Accu) ->
     BaseCount = Value div 32,
     Count = case Value rem 32 of
-                0 -> BaseCount;
-                _ -> BaseCount + 1
+                0 ->
+                    BaseCount;
+                _ ->
+                    BaseCount + 1
             end,
     encode1(Value, Count, Accu).
 
@@ -75,43 +79,80 @@ check_symbol(Value) ->
     symbol(Value rem 37).
 
 
-symbol(0) -> $0;
-symbol(1) -> $1;
-symbol(2) -> $2;
-symbol(3) -> $3;
-symbol(4) -> $4;
-symbol(5) -> $5;
-symbol(6) -> $6;
-symbol(7) -> $7;
-symbol(8) -> $8;
-symbol(9) -> $9;
-symbol(10) -> $A;
-symbol(11) -> $B;
-symbol(12) -> $C;
-symbol(13) -> $D;
-symbol(14) -> $E;
-symbol(15) -> $F;
-symbol(16) -> $G;
-symbol(17) -> $H;
-symbol(18) -> $J;
-symbol(19) -> $K;
-symbol(20) -> $M;
-symbol(21) -> $N;
-symbol(22) -> $P;
-symbol(23) -> $Q;
-symbol(24) -> $R;
-symbol(25) -> $S;
-symbol(26) -> $T;
-symbol(27) -> $V;
-symbol(28) -> $W;
-symbol(29) -> $X;
-symbol(30) -> $Y;
-symbol(31) -> $Z;
-symbol(32) -> $*;
-symbol(33) -> $~;
-symbol(34) -> $$;
-symbol(35) -> $=;
-symbol(36) -> $U.
+symbol(0) ->
+    $0;
+symbol(1) ->
+    $1;
+symbol(2) ->
+    $2;
+symbol(3) ->
+    $3;
+symbol(4) ->
+    $4;
+symbol(5) ->
+    $5;
+symbol(6) ->
+    $6;
+symbol(7) ->
+    $7;
+symbol(8) ->
+    $8;
+symbol(9) ->
+    $9;
+symbol(10) ->
+    $A;
+symbol(11) ->
+    $B;
+symbol(12) ->
+    $C;
+symbol(13) ->
+    $D;
+symbol(14) ->
+    $E;
+symbol(15) ->
+    $F;
+symbol(16) ->
+    $G;
+symbol(17) ->
+    $H;
+symbol(18) ->
+    $J;
+symbol(19) ->
+    $K;
+symbol(20) ->
+    $M;
+symbol(21) ->
+    $N;
+symbol(22) ->
+    $P;
+symbol(23) ->
+    $Q;
+symbol(24) ->
+    $R;
+symbol(25) ->
+    $S;
+symbol(26) ->
+    $T;
+symbol(27) ->
+    $V;
+symbol(28) ->
+    $W;
+symbol(29) ->
+    $X;
+symbol(30) ->
+    $Y;
+symbol(31) ->
+    $Z;
+symbol(32) ->
+    $*;
+symbol(33) ->
+    $~;
+symbol(34) ->
+    $$;
+symbol(35) ->
+    $=;
+symbol(36) ->
+    $U.
 
 
 -spec decode(binary()) -> binary().
@@ -126,8 +167,10 @@ decode_check(Data) ->
     Decoded = decode(Data0),
     Check = check_symbol(data_to_integer(Decoded, false)),
     case Check =:= Expectedcheck of
-        true -> {ok, Decoded};
-        false -> {error, invalid}
+        true ->
+            {ok, Decoded};
+        false ->
+            {error, invalid}
     end.
 
 
