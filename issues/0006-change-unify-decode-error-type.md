@@ -5,7 +5,7 @@
 - Completed: {YYYY-MM-DD}
 - Model: qwen3.8-max-preview
 - Branch: feature/change-unify-decode-error-type
-- Polished: {YYYY-MM-DD}
+- Polished: 2026-09-23
 
 ## 目的
 
@@ -13,29 +13,40 @@
 
 ## 優先度根拠
 
-0002 の修正（crockford:decode のエラー返却化）と同時に対応しないと、`base32.erl:24` の `{ok, base32_crockford:decode(Data)}` が `{ok, {error, invalid}}` という二重ラップを引き起こす。
+clockwork は `invalid_size` と `invalid_format` を返し分け、crockford_check は `invalid` を返すため、呼び出し側がエラー型を一様に扱えない。
 
 ## 現状
 
 - clockwork: `{error, invalid_size | invalid_format}`
 - rfc4648: `{error, invalid_format}`
 - crockford_check: `{error, invalid}`
-- crockford: クラッシュ（`{error, _}` を返さない）
+- crockford: クラッシュ（`{error, _}` を返さない。0002 の修正で `{error, invalid_format}` になる）
 
-`base32.erl:24` の `{ok, base32_crockford:decode(Data)}` は、crockford:decode を `{ok, _} | {error, _}` 返却に修正すると二重ラップになる。
+crockford の返却型と `base32.erl` の crockford 経路は 0002 で修正する。本 issue は残る clockwork と crockford_check のエラーアトムを統一する。
 
 ## 設計方針
 
-全フォーマットで `{error, invalid_format}` に統一する。`base32.erl` の crockford 経路を `case` 分岐に変更する。
+全フォーマットで `{error, invalid_format}` に統一する。
+
+- `base32_clockwork:decode0/2` の `decode0(<<_:8>>, [])` 節の `invalid_size` を `invalid_format` に変更する
+- `base32_crockford:decode_check/1` のチェックサム不一致の `{error, invalid}` を `{error, invalid_format}` に変更する
+- 変更に伴い `decode/1` と `decode_check/1` の spec、該当テストの期待値を更新する
 
 ## 完了条件
 
 - 全フォーマットのエラー型が `{error, invalid_format}` に統一される
-- `base32:decode(crockford, Data)` がクラッシュせず `{ok, _} | {error, _}` を返す
+- `base32:decode(crockford, Data)` がクラッシュせず `{ok, _} | {error, _}` を返す（0002 の修正で達成済み）
 - 既存のテストが全て通る
 
 ## 解決方法
 
-- `base32.erl:24` を `base32_crockford:decode(Data)` の直接呼び出しに変更する
-- 各モジュールのエラーアトムを `invalid_format` に統一する
-- 0002 の修正と同時に行う
+- `base32_clockwork:decode0/2` の `decode0(<<_:8>>, [])` 節の `{error, invalid_size}` を `{error, invalid_format}` に変更する
+- `base32_clockwork:decode/1` の spec を `{ok, binary()} | {error, invalid_format}` に変更する
+- `test/base32_clockwork_test.erl` の `decode_error_test` の `invalid_size` 期待値を `invalid_format` に更新する
+- `base32_crockford:decode_check/1` のチェックサム不一致の `{error, invalid}` を `{error, invalid_format}` に変更する
+- `base32_crockford:decode_check/1` の spec を `{ok, binary()} | {error, invalid_format}` に変更する
+- `CHANGES.md` の `## develop` に [CHANGE] エラー型の統一を追記する
+
+注意:
+- 0002 の修正後に実施すること
+- `base32_crockford:decode/1` の返却型と `base32.erl` の crockford 経路は 0002 で修正するため、本 issue では変更しない
