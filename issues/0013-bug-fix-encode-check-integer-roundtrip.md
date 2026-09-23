@@ -39,3 +39,9 @@ Crockford の仕様は入力を non-negative integer と定義し、decode も i
 
 - 設計判断 (a) の場合: `encode_check(Value) ->` 節を削除し、`encode_check(Data) when is_binary(Data) ->` のみにする
 - 設計判断 (b) の場合: `decode_check_integer/1` を別途追加する
+
+## pending とした理由
+
+- `encode_check/1` の integer 経路と `decode_check/1` のラウンドトリップは、5bit エンコードの切詰めで整数値が保存されない構造的な問題であり、(a) integer 経路の廃止（公開 API の後方互換なし削除）か (b) 別 API の追加（入力から整数由来かを判定できないため、ラウンドトリップの定義自体の再設計）のいずれかを選択する必要がある。
+- どちらを選ぶかで `encode_check/1` の spec の扱いと 0007 の内容が変わり、後方互換への影響も大きいため、方針が固まるまで保留する。
+- 保留中は 0004 を本 issue に依存させず、`encode/1` の integer 経路に限定して実施する。
