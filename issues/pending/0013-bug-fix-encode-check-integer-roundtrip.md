@@ -28,7 +28,7 @@ Crockford の仕様は入力を non-negative integer と定義し、decode も i
 - (a) `encode_check/1` の integer 経路を廃止し、`is_binary` ガードのみにする
 - (b) `decode_check/1` が integer を返す経路を別途設ける（ただし入力から整数由来か判定不能）
 
-0004 の修正と同時に対応する。
+0004 の修正後に、`encode/1` の integer 経路の修正を踏まえて設計判断を行う。
 
 ## 完了条件
 
