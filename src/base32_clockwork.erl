@@ -93,19 +93,23 @@ decode(Data) ->
     decode0(Data, []).
 
 
-decode0(<<>>, []) ->
-    {ok, <<>>};
-decode0(<<>>, Accu = [Last | Prev]) ->
-    Size = base32_utils:bits_list_size(Accu),
-    Last1 = case Size rem 8 of
-                0 ->
-                    Last;
-                PaddingSize ->
-                    BodySize = 5 - PaddingSize,
-                    <<Last2:BodySize/bitstring, _/bitstring>> = Last,
-                    Last2
-            end,
-    {ok, base32_utils:rev_bits_list_to_binary([Last1 | Prev])};
+decode0(<<>>, Accu) ->
+    %% 全ビットを連結した後、バイト境界に収まらない末尾ビットをパディングとして除去する
+    Decoded0 = base32_utils:rev_bits_list_to_binary(Accu),
+    DecodedSize = bit_size(Decoded0),
+    case DecodedSize rem 8 of
+        0 ->
+            {ok, Decoded0};
+        PaddingSize ->
+            %% 正しいエンコード結果では末尾がゼロで埋まるため、非ゼロは invalid_format として拒否する
+            DataSize = DecodedSize - PaddingSize,
+            case Decoded0 of
+                <<Decoded1:DataSize/bitstring, 0:PaddingSize>> ->
+                    {ok, Decoded1};
+                _ ->
+                    {error, invalid_format}
+            end
+    end;
 decode0(<<_:8>>, []) ->
     {error, invalid_size};
 decode0(<<"0", Next/binary>>, Accu) ->

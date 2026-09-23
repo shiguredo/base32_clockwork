@@ -2,6 +2,11 @@
 
 ## develop
 
+- [FIX] `base32_clockwork:decode/1` のパディング処理の欠陥を修正する
+  - シンボル数が N mod 8 = 3 または 6 の入力でクラッシュするのを修正する
+  - パディングビットが非ゼロの入力は `{error, invalid_format}` を返すようにする
+  - @voluntas
+
 ### misc
 
 - [CHANGE] GitHub Actions のコンテナイメージをやめて shiguredo/setup-erlang で Erlang/OTP 29.0.6 / AWS-LC v5.8.0 をセットアップし、`minimum_otp_vsn` を 29.0 にする

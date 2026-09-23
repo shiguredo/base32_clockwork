@@ -2,7 +2,7 @@
 
 - Priority: High
 - Created: 2026-07-20
-- Completed: {YYYY-MM-DD}
+- Completed: 2026-09-24
 - Model: qwen3.8-max-preview
 - Branch: feature/fix-clockwork-decode-padding
 - Polished: 2026-09-23
@@ -44,7 +44,8 @@
 ## 解決方法
 
 - `decode0(<<>>, Accu)` のパディング除去ロジックを、全ビット連結後に末尾を切り詰める方式に変更する
-- パディングビットのゼロ検証を追加する
-- 3 文字・6 文字・11 文字等のクラッシュ経路のテストを追加する
+- パディングビットのゼロ検証を追加し、非ゼロの場合は `{error, invalid_format}` を返す
+- 3 文字・6 文字・9 文字・11 文字のクラッシュ経路とパディングビット非ゼロのテストを追加する
+- `CHANGES.md` の `## develop` に [FIX] エントリを追記する
 
 注意: 1 文字入力のエラー種別（`invalid_size` → `invalid_format`）の変更は 0006 で一括対応する。本 issue では変更しない。
