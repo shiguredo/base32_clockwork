@@ -5,7 +5,7 @@
 - Completed: {YYYY-MM-DD}
 - Model: qwen3.8-max-preview
 - Branch: feature/fix-clockwork-decode-padding
-- Polished: {YYYY-MM-DD}
+- Polished: 2026-09-23
 
 ## 目的
 
@@ -17,7 +17,7 @@
 
 ## 現状
 
-`src/base32_clockwork.erl:68-74` で `BodySize = 5 - PaddingSize` を計算しているが、`PaddingSize`（= `Size rem 8`）が 5 を超える場合 `BodySize` が負になり `badmatch` でクラッシュする。
+`base32_clockwork:decode0/2` の `decode0(<<>>, Accu)` 節で `BodySize = 5 - PaddingSize` を計算しているが、`PaddingSize`（= `Size rem 8`）が 5 を超える場合 `BodySize` が負になり `badmatch` でクラッシュする。
 
 クラッシュする入力長: N mod 8 ∈ {3, 6}（3, 6, 11, 14, 19, 22, 27, 30, ... 文字）
 
@@ -26,9 +26,9 @@
 - `decode(<<"CSQPYR">>)` → `error:{badmatch,<<24:5>>}`
 - `decode(<<"CSQPYRK1E8C">>)` → クラッシュ（11 文字）
 
-また、パディングビット非ゼロを暗黙的に許容する（`src/base32_clockwork.erl:73` の `_/bitstring`）。`decode(<<"C1">>)` はパディングビット `01` が非ゼロだが `{ok, <<"`">>}` を返す。crockford は badmatch、rfc4648 は error で拒否しており、同一ライブラリ内で検証の厳密さが不一致。
+また、パディングビット非ゼロを暗黙的に許容する（`decode0(<<>>, Accu)` 節の `<<Last2:BodySize/bitstring, _/bitstring>> = Last` の `_/bitstring`）。`decode(<<"C1">>)` はパディングビット `01` が非ゼロだが `{ok, <<96>>}`（バッククォート 1 文字）を返す。crockford は同じ入力で `badmatch`、rfc4648 はパディングビット非ゼロのパディング付き入力（例: `decode(<<"MZ======">>)`）を `{error, invalid_format}` で拒否しており、同一ライブラリ内で検証の厳密さが不一致。
 
-さらに、1 文字の不正入力（例: `decode(<<"U">>)`）が `{error, invalid_size}` を返すが、`U` はサイズではなくフォーマットの問題（`src/base32_clockwork.erl:77`）。
+さらに、1 文字の不正入力（例: `decode(<<"U">>)`）が `{error, invalid_size}` を返すが、`U` はサイズではなくフォーマットの問題（`decode0(<<_:8>>, [])` 節）。
 
 ## 設計方針
 
