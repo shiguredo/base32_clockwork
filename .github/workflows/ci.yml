@@ -3,9 +3,12 @@ name: ci
 on:
   push:
     paths-ignore:
-      - "doc/**"
-      - "**.rst"
-  pull_request:
+      - "LICENSE"
+      - "**.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # prek.toml のフックをすべて実行する (efmt / efmt-check / elint など)
@@ -14,16 +17,17 @@ jobs:
     # prek の hook 環境準備 (初回や cache miss) を見込んで余裕を持たせる
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.0
 
   ci:
-    # ubuntu-slim は 1 vCPU / 15 分の実行制限がある。dialyzer は project PLT を
-    # キャッシュして 2 回目以降を差分解析だけにして時間内に収める
+    # ubuntu-slim は 1 vCPU / 15 分のプラットフォーム上限がある。初回の PLT
+    # キャッシュ miss を含めた ci ジョブの実測は 2 分強のため、10 分で打ち切って
+    # 異常を早く検知する
     runs-on: ubuntu-slim
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # ビルド済みの Erlang/OTP 29.0.6 + AWS-LC v5.8.0 を使う
       # (rebar.config の minimum_otp_vsn は 29.0)
@@ -34,13 +38,14 @@ jobs:
           aws-lc-version: "v5.8.0"
 
       # setup-erlang が配置するベース PLT は rebar.config の warnings 設定が一致
-      # しないと再利用されないため、project PLT を保存して差分解析だけにする。
-      # ソース変更は dialyzer がビームファイルの差分として検知して解析し直すので、
-      # キーには PLT の互換性を決める rebar.config / rebar.lock だけを含める
+      # しないと差分解析に使われず全ファイルを解析するため、project PLT を保存して
+      # 2 回目以降の解析を短くする。ソース変更は dialyzer がビームファイルの差分
+      # として検知して解析し直すので、キーには PLT の互換性を決める otp-version /
+      # aws-lc-version / rebar.config / rebar.lock だけを含める
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: _build/default/rebar3_${{ steps.erlang.outputs.otp-version }}_iplt
-          key: dialyzer-plt-${{ runner.os }}-${{ runner.arch }}-${{ steps.erlang.outputs.otp-version }}-${{ hashFiles('rebar.config', 'rebar.lock') }}
+          key: dialyzer-plt-${{ runner.os }}-${{ runner.arch }}-${{ steps.erlang.outputs.otp-version }}-${{ steps.erlang.outputs.aws-lc-version }}-${{ hashFiles('rebar.config', 'rebar.lock') }}
 
       - run: make ci
 
