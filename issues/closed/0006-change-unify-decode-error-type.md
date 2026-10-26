@@ -52,3 +52,12 @@ fuzzing (0002) の修正後に実施した。当初の設計方針「全フォ�
 - 0002 の修正後に実施すること
 - `base32_crockford:decode/1` の返却型と `base32.erl` の crockford 経路は 0002 で修正するため、本 issue では変更しない
 - rfc4648 (0005) の対応は本 issue の範囲外。設計方針の再検討後に対応する
+
+## reopened にした理由
+
+`invalid_size` が発生するのは clockwork でシンボル 1 文字だけの入力のときのみである。シンボル 1 文字 (5 ビット) は 1 バイトに満たない形式として不完全な入力であり、サイズ違反として特別扱いする実利が薄いため、エラー型は `invalid_format` の 1 種に統一する判断に再変更した。
+
+- `base32_clockwork:decode0/2` の `decode0(<<_:8>>, [])` 節の `{error, invalid_size}` を `{error, invalid_format}` に変更する
+- `base32_clockwork:decode/1` の spec を `{ok, binary()} | {error, invalid_format}` に変更する
+- `test/base32_clockwork_test.erl` の `decode_error_test` の `invalid_size` 期待値を `invalid_format` に更新する
+- 拒否される入力は変わらない (エラーのアトムが変わるだけ)
