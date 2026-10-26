@@ -2,9 +2,9 @@
 
 - Priority: Medium
 - Created: 2026-07-20
-- Completed: {YYYY-MM-DD}
+- Completed: 2026-10-26
 - Model: qwen3.8-max-preview
-- Branch: feature/fix-changes-md
+- Branch: feature/update-changes-md
 - Polished: {YYYY-MM-DD}
 
 ## 目的
@@ -40,4 +40,7 @@ AGENTS.md の変更履歴規約に違反しており、リリース時の混乱�
 
 ## 解決方法
 
-- `CHANGES.md` の `## develop` セクションを並べ替え・修正する
+- `CHANGES.md` の `## develop` セクションを現状確認した結果、指摘のうち種別順序と rebar3 バージョン (実物 `3.28.0`) は既に解消済みだった
+- `- [ADD] PBT を追加` を「〜する」で終わる形に修正する
+- `- [FIX] import を利用しないようにする` を `- [UPDATE] src/ の import を削除する` に修正する (import 削除はバグ修正ではなく後方互換のある変更で、テストの import 削除は 0010 が担当)
+- `## 2023.1.0` の `日付:` を規約の `**リリース日**:` に修正する

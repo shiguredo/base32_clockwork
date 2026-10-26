@@ -37,7 +37,7 @@
   - @voluntas
 - [CHANGE] Slack 通知を shiguredo/github-actions の composite action (slack-notify) に移行する
   - @voluntas
-- [ADD] PBT を追加
+- [ADD] PBT を追加する
   - clockwork と crockford (integer 経路のシンボル列は元の整数と一致する)
   - @voluntas
 - [ADD] fuzzer による fuzzing を導入する
@@ -45,12 +45,12 @@
   - @voluntas
 - [UPDATE] rebar3 3.28.0 に更新する
   - @voluntas
-- [FIX] import を利用しないようにする
+- [UPDATE] src/ の import を削除する
   - @voluntas
 
 ## 2023.1.0
 
-日付: 2023-05-02
+**リリース日**: 2023-05-02
 
 - [ADD] hex_efmt と hex_elvis を追加する
   - @voluntas
