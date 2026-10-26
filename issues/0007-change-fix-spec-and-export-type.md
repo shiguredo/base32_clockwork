@@ -2,9 +2,9 @@
 
 - Priority: Medium
 - Created: 2026-07-20
-- Completed: {YYYY-MM-DD}
+- Completed: 2026-10-26
 - Model: qwen3.8-max-preview
-- Branch: feature/change-fix-spec-and-export-type
+- Branch: develop
 - Polished: {YYYY-MM-DD}
 
 ## 目的
@@ -37,4 +37,9 @@ Dialyzer の検出能力を毀損し、利用者が spec で型を参照でき�
 
 ## 解決方法
 
-- 各ファイルに上記の spec 修正を追加する
+- `base32.erl` に `-export_type([base32_format/0])` を追加する
+- `base32:encode/2` の spec を `(base32_format(), binary() | non_neg_integer()) -> binary()` に修正する (crockford 系のみ整数を受け付けるため、負整数は除外する)
+- `base32_crockford:encode/1` と `encode_check/1` の spec を `binary() | non_neg_integer()` に修正する (負整数は `encode0/2` の非負条件で function_clause になるため `integer()` より狭い型にする)
+- `base32:decode/2` の spec の `{error, atom()}` を `{error, invalid_format}` に修正する (完了条件の「全公開関数に正確な spec」に含める)
+- `base32_utils` の `rev_bits_list_to_binary/1` と `bits_list_size/1` に spec を追加する (連結結果はバイト境界に整っていない bitstring() になり得るため返値は `bitstring()`)
+- efmt / elint / EUnit (25 件) / dialyzer / xref が通ることを確認する
