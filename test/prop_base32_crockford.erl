@@ -1,20 +1,57 @@
 -module(prop_base32_crockford).
 
--export([prop_base32_crockford_encode_integer/1]).
+-export([prop_base32_crockford_encode_decode/1,
+         prop_base32_crockford_encode_check_decode_check/1,
+         prop_base32_crockford_encode_integer/1,
+         prop_base32_crockford_case_insensitive_and_alias/1]).
 
 -include_lib("proper/include/proper.hrl").
 
 
-prop_base32_crockford_encode_integer(doc) ->
-    "base32_crockford を encode した整数のシンボル列は元の整数と一致する";
-prop_base32_crockford_encode_integer(opts) ->
+prop_base32_crockford_encode_decode(doc) ->
+    "base32_crockford を encode して decode する";
+prop_base32_crockford_encode_decode(opts) ->
     [{numtests, 100000}, {on_output, fun proper_output/2}].
+
+
+%% encode した canonical な出力は decode で元の値に戻る。
+%% range(0, 100) で空 binary も含める。
+prop_base32_crockford_encode_decode() ->
+    ?FORALL(N,
+            range(0, 100),
+            ?FORALL(RandomBytes,
+                    binary(N),
+                    base32_crockford:decode(base32_crockford:encode(RandomBytes)) =:=
+                    {ok, RandomBytes})).
+
+
+prop_base32_crockford_encode_check_decode_check(doc) ->
+    "base32_crockford を encode_check して decode_check する";
+prop_base32_crockford_encode_check_decode_check(opts) ->
+    [{numtests, 100000}, {on_output, fun proper_output/2}].
+
+
+%% チェックシンボル付きの encode と decode の roundtrip を検証する。
+%% 空入力はチェックシンボルのみの "0" になり、これも roundtrip が成立する。
+prop_base32_crockford_encode_check_decode_check() ->
+    ?FORALL(N,
+            range(0, 100),
+            ?FORALL(RandomBytes,
+                    binary(N),
+                    base32_crockford:decode_check(base32_crockford:encode_check(RandomBytes)) =:=
+                    {ok, RandomBytes})).
 
 
 %% encode/1 の integer 経路は、V を 5 ビットごとのシンボル列に分解した
 %% canonical な表現を返すため、シンボル列を再び整数に戻すと V に一致する。
 %% decode/1 はバイト境界で切詰めるため binary レベルの roundtrip は
 %% integer 経路では成立しない。そのためシンボル値の連結で検証する。
+prop_base32_crockford_encode_integer(doc) ->
+    "base32_crockford を encode した整数のシンボル列は元の整数と一致する";
+prop_base32_crockford_encode_integer(opts) ->
+    [{numtests, 100000}, {on_output, fun proper_output/2}].
+
+
 prop_base32_crockford_encode_integer() ->
     ?FORALL(V,
             range(0, 16#FFFFFFFFFFFFFFFF),
@@ -22,6 +59,28 @@ prop_base32_crockford_encode_integer() ->
                 Encoded = base32_crockford:encode(V),
                 decode_int(Encoded) =:= V
             end).
+
+
+prop_base32_crockford_case_insensitive_and_alias(doc) ->
+    "base32_crockford の encode 結果を小文字化・エイリアス化しても decode できる";
+prop_base32_crockford_case_insensitive_and_alias(opts) ->
+    [{numtests, 100000}, {on_output, fun proper_output/2}].
+
+
+%% decode は大文字小文字を区別せず、O を 0、I と L を 1 のエイリアスとして受理する。
+%% canonical な encode 結果を 4 種類の変換で書き換えても decode 結果は変わらない。
+prop_base32_crockford_case_insensitive_and_alias() ->
+    ?FORALL(Transform,
+            oneof([lowercase, alias_o, alias_i, alias_l]),
+            ?FORALL(N,
+                    range(0, 100),
+                    ?FORALL(RandomBytes,
+                            binary(N),
+                            begin
+                                Encoded = base32_crockford:encode(RandomBytes),
+                                Transformed = replace_symbols(Transform, Encoded),
+                                base32_crockford:decode(Transformed) =:= {ok, RandomBytes}
+                            end))).
 
 
 %% エンコード文字列のシンボルを 5 ビットごとに連結して整数に戻す
@@ -101,6 +160,26 @@ symbol_value($Y) ->
     30;
 symbol_value($Z) ->
     31.
+
+
+%% 変換の種類に応じてエンコード出力の各シンボルを書き換える。
+%% lowercase は A から Z を小文字化し、alias_o は 0 を O に、alias_i と alias_l は 1 を I と L に置換する
+replace_symbols(Type, Encoded) ->
+    list_to_binary([ to_symbol(Type, C) || <<C>> <:= Encoded ]).
+
+
+%% lowercase は A から Z を小文字化し、alias_o は 0 を O に、
+%% alias_i と alias_l は 1 を I と L に置換する (その他のシンボルはそのまま)
+to_symbol(lowercase, C) when C >= $A, C =< $Z ->
+    C + 32;
+to_symbol(alias_o, $0) ->
+    $O;
+to_symbol(alias_i, $1) ->
+    $I;
+to_symbol(alias_l, $1) ->
+    $L;
+to_symbol(_, C) ->
+    C.
 
 
 proper_output(".", _Args) ->
