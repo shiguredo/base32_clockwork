@@ -19,3 +19,19 @@ crockford_nocheck_test() ->
     {ok, Decoded} = decode(crockford, Encoded),
     ?assertEqual(Encoded, base32_crockford:encode(Data)),
     ?assertEqual({ok, Decoded}, base32_crockford:decode(Encoded)).
+
+
+crockford_check_test() ->
+    Data = <<"foobar">>,
+    Encoded = encode(crockford_check, Data),
+    {ok, Decoded} = decode(crockford_check, Encoded),
+    ?assertEqual(Encoded, base32_crockford:encode_check(Data)),
+    ?assertEqual({ok, Decoded}, base32_crockford:decode_check(Encoded)).
+
+
+clockwork_test() ->
+    Data = <<"foobar">>,
+    Encoded = encode(clockwork, Data),
+    {ok, Decoded} = decode(clockwork, Encoded),
+    ?assertEqual(Encoded, base32_clockwork:encode(Data)),
+    ?assertEqual({ok, Decoded}, base32_clockwork:decode(Encoded)).
