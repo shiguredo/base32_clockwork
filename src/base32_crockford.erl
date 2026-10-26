@@ -161,24 +161,48 @@ decode(Data) when is_binary(Data) ->
 
 
 -spec decode_check(binary()) -> {ok, binary()} | {error, invalid_format}.
-decode_check(<<>>) ->
-    %% チェックシンボルを含まない空入力は無効な入力として拒否する
-    {error, invalid_format};
-decode_check(Data) ->
-    Size = (size(Data) - 1) * 8,
-    <<Data0:Size/bitstring, Expectedcheck:8>> = Data,
+decode_check(Data) when is_binary(Data) ->
+    %% 分割前にハイフンを除去する (ハイフンは decode0/2 と同様に無視する)
+    case binary:replace(Data, <<"-">>, <<>>, [global]) of
+        <<>> ->
+            %% チェックシンボルを含まない入力は無効な入力として拒否する
+            {error, invalid_format};
+        Hyphenless ->
+            decode_check0(Hyphenless)
+    end.
+
+
+%% ハイフンを除去した入力の最後の文字をチェックシンボルとして扱い、
+%% デコード結果から計算したチェックシンボルと比較する
+-spec decode_check0(binary()) -> {ok, binary()} | {error, invalid_format}.
+decode_check0(Hyphenless) ->
+    Size = (size(Hyphenless) - 1) * 8,
+    <<Data0:Size/bitstring, Expectedcheck:8>> = Hyphenless,
     case decode(Data0) of
         {ok, Decoded} ->
-            Check = check_symbol(data_to_integer(Decoded, false)),
-            case Check =:= Expectedcheck of
-                true ->
-                    {ok, Decoded};
-                false ->
-                    {error, invalid_format}
-            end;
+            match_check_symbol(Decoded, Expectedcheck);
         {error, invalid_format} ->
             {error, invalid_format}
     end.
+
+
+%% デコード結果から計算したチェックシンボルが入力のチェックシンボルと一致するかを判定する
+-spec match_check_symbol(binary(), byte()) -> {ok, binary()} | {error, invalid_format}.
+match_check_symbol(Decoded, Expectedcheck) ->
+    case check_symbol(data_to_integer(Decoded, false)) =:= normalize_check_symbol(Expectedcheck) of
+        true ->
+            {ok, Decoded};
+        false ->
+            {error, invalid_format}
+    end.
+
+
+%% チェックシンボルの比較は大文字小文字を区別しないため、ASCII の a から z のみ大文字化する
+-spec normalize_check_symbol(byte()) -> byte().
+normalize_check_symbol(C) when C >= $a, C =< $z ->
+    C - 32;
+normalize_check_symbol(C) ->
+    C.
 
 
 decode0(<<>>, Accu) ->

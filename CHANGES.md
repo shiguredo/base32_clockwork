@@ -17,6 +17,10 @@
 - [FIX] `base32_crockford:decode_check/1` が空入力でクラッシュするのを修正する
   - 空入力は `{error, invalid_format}` を返す
   - @voluntas
+- [FIX] `base32_crockford:decode_check/1` がハイフン付き入力と小文字のチェックシンボルを正しく扱えないのを修正する
+  - 分割前にハイフンを除去する
+  - チェックシンボルは大文字小文字を区別せずに比較する
+  - @voluntas
 
 ### misc
 

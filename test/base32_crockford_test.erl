@@ -102,6 +102,17 @@ decode_check_mismatch_test() ->
     ok.
 
 
+%% ハイフンとチェックシンボルの大文字小文字を区別してはならない。
+%% fuzzing で検出された入力 (8gOOj) と完了条件の入力の回帰テスト。
+decode_check_hyphen_and_lowercase_test() ->
+    ?assertEqual({error, invalid_format}, decode_check(<<"-">>)),
+    ?assertEqual({ok, <<"f">>}, decode_check(<<"CRW-">>)),
+    ?assertEqual({ok, <<"f">>}, decode_check(<<"CRw">>)),
+    ?assertEqual({ok, <<68, 0>>}, decode_check(<<"8gOOj">>)),
+    ?assertEqual({error, invalid_format}, decode_check(<<"CR", 227>>)),
+    ok.
+
+
 other1_test() ->
     P = <<1, 221, 62, 98, 254, 21, 78, 215, 43, 109, 45, 36, 57, 116, 102, 157>>,
     E = <<"07EKWRQY2N7DEAVD5MJ3JX36KM">>,
