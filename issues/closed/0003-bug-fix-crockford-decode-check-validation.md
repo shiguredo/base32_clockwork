@@ -2,7 +2,7 @@
 
 - Priority: High
 - Created: 2026-07-20
-- Completed: {YYYY-MM-DD}
+- Completed: 2026-10-26
 - Model: qwen3.8-max-preview
 - Branch: feature/fix-crockford-decode-check-validation
 - Polished: 2026-09-23
@@ -57,3 +57,14 @@
 注意:
 - 0002 の修正後に実施すること（`decode/1` の返却型に依存する）。0002 実施後は現状 2 の実測値も `{error, invalid_format}` に変わる
 - 0006 の前後どちらでも成立する。0006 実施後は現状 3 の実測値が `{error, invalid_format}` に変わる
+
+## 解決方法
+
+fuzzing (shiguredo/fuzzer) で潰した。fuzz target の `decode_check/1` に対する検証に「同一の意味を持つ入力 (大文字正規化・ハイフン除去) で結果が変わる場合は矛盾として例外を送出してクラッシュ入力として保存させる」を追加し、30 秒の fuzzing で入力 `8gOOj` が「元の入力では `{error, invalid_format}`、大文字版では `{ok, <<68, 0>>}`」という矛盾を検出した。これはチェックシンボル比較が case-sensitive である欠陥の実証である。
+
+- 分割前に `binary:replace(Data, <<"-">>, <<>>, [global])` でハイフンを除去し、ハイフンを除去した入力の最後の文字をチェックシンボルとして扱う
+- ハイフン除去後に空 binary なら `{error, invalid_format}` を返す
+- チェックシンボル比較前に ASCII の `a`〜`z` のみを大文字に正規化してから比較する (`normalize_check_symbol/1`)
+- `is_binary(Data)` ガードを追加した
+- `test/base32_crockford_test.erl` に完了条件の入力と fuzzing で検出された入力のテスト (`decode_check_hyphen_and_lowercase_test`) を追加した
+- 修正後に `make fuzzing` を 30 秒実行し、クラッシュ 0 件とカバレッジ 282 行から 286 行への増加を確認した

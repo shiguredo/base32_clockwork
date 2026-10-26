@@ -18,4 +18,4 @@ crockford_nocheck_test() ->
     Encoded = encode(crockford, Data),
     {ok, Decoded} = decode(crockford, Encoded),
     ?assertEqual(Encoded, base32_crockford:encode(Data)),
-    ?assertEqual(Decoded, base32_crockford:decode(Encoded)).
+    ?assertEqual({ok, Decoded}, base32_crockford:decode(Encoded)).

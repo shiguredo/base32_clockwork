@@ -2,7 +2,7 @@
 
 - Priority: High
 - Created: 2026-07-20
-- Completed: {YYYY-MM-DD}
+- Completed: 2026-10-26
 - Model: qwen3.8-max-preview
 - Branch: feature/fix-crockford-encode-integer
 - Polished: 2026-09-23
@@ -59,3 +59,13 @@ binary 経路の `ceil(bit_size / 5)` は正しい。integer 経路だけが間�
 - `encode/1` の integer 経路は整数の canonical な Base32 文字列を生成するものであり、`decode/1` が同じ整数値を復元することは保証しない
 - `encode_check/1` の integer 節の存否と `decode_check/1` のラウンドトリップの設計判断は保留中であり、本 issue では行わない
 - `encode1/3` の除算を置き換える性能改善 (0014) と同じ関数群に触れるため、本 issue を先に実施する
+
+## 解決方法
+
+PBT (PropEr) で潰した。`test/prop_base32_crockford.erl` に「`encode(V)` の出力シンボル列を 5 ビットごとに再び整数に戻すと V と一致する」プロパティ (`prop_base32_crockford_encode_integer/1`、10 万回) を追加し、`encode/1` の integer 経路は `decode/1` がバイト境界で切詰めるため binary レベルの roundtrip は成立しない。そのためシンボル値の連結で検証した。PBT は最小反例 `32` を検出し、`encode(32)` が `<<"0">>` を返す現状の欠陥を実証した。
+
+- `encode0/2` の integer 節の Count 計算を再帰的な桁数計算 (`digit_count/1`) に変更した
+- `encode(0)` が `<<"0">>` を返すようにした (0 は 1 桁として扱う)
+- `encode0(Value, Accu) when is_integer(Value), Value >= 0` にガードを追加し、integer 以外の入力は `function_clause` でクラッシュする
+- `test/base32_crockford_test.erl` に `encode_integer_test` / `encode_invalid_input_test` / `encode_check_integer_test` を追加した。`encode_check/1` の integer 経路は `encode0/2` を共有するため、出力桁が正しい canonical な表現 (`encode_check(42)` は `<<"1A5">>`) になることを確認した
+- `make ci` と `make fuzzing` (30 秒、クラッシュ 0 件) を再実行して通過を確認した

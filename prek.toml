@@ -5,11 +5,13 @@
 default_stages = ["pre-commit"]
 
 # prek 組み込みフック (オフラインで動作する Rust ネイティブ実装)
+# fuzz/corpus/ は libFuzzer に渡す入力のバイト列そのものなので、
+# 内容を書き換えるフック (末尾改行・末尾空白・改行コードの正規化) の対象から除外する
 [[repos]]
 repo = "builtin"
 hooks = [
-  { id = "trailing-whitespace" },
-  { id = "end-of-file-fixer" },
+  { id = "trailing-whitespace", exclude = "^fuzz/corpus/" },
+  { id = "end-of-file-fixer", exclude = "^fuzz/corpus/" },
   { id = "check-yaml" },
   { id = "check-toml" },
   { id = "check-json" },
@@ -18,7 +20,7 @@ hooks = [
   # 秘密鍵の誤コミットを防ぐ
   { id = "detect-private-key" },
   # 改行コードの混在を防ぐ
-  { id = "mixed-line-ending" },
+  { id = "mixed-line-ending", exclude = "^fuzz/corpus/" },
 ]
 
 # efmt / elint は shiguredo/erlang-pre-commit 経由で実行する

@@ -2,7 +2,7 @@
 
 - Priority: High
 - Created: 2026-07-20
-- Completed: {YYYY-MM-DD}
+- Completed: 2026-10-26
 - Model: qwen3.8-max-preview
 - Branch: feature/change-crockford-decode-error-handling
 - Polished: 2026-09-23
@@ -59,3 +59,16 @@
 - 返却型変更はモジュール公開 API の後方互換なし変更のため、ブランチは `feature/change-` を使う
 - 0006 は本 issue の修正後に実施する。`base32.erl` の crockford 経路と `base32_crockford:decode/1` の返却型は本 issue で対応するため、0006 と同一 PR にする必要はない
 - ハイフン除去・空入力検証・チェックシンボルの大文字小文字対応は別 issue の範囲とする
+
+## 解決方法
+
+fuzzing (shiguredo/fuzzer) で検出されたクラッシュ入力を回帰テストにして、設計方針どおりに修正した。fuzzing では 30 秒で 3 件のクラッシュ (不正文字の `function_clause`、パディングビット非ゼロの `badmatch`、空入力の `decode_check` の `badmatch`) が検出された。
+
+- `decode0/2` の末尾に catch-all 節 `decode0(_, _) -> {error, invalid_format}` を追加した
+- パディングビット検証を `case Decoded0 of ... _ -> {error, invalid_format} end` に書き換えた
+- `decode0/2` の戻り値を `{ok, binary()} | {error, invalid_format}` に変更し、`decode/1` は `decode0/2` の結果をそのまま返すようにした (spec も `{ok, binary()} | {error, invalid_format}` に変更)
+- `base32.erl` の `decode(crockford, Data)` 節を `base32_crockford:decode(Data)` の直接呼び出しに変更した
+- `decode_check/1` は `decode(Data0)` を `case` で受け、`{error, invalid_format}` をそのまま返す。空入力はチェックシンボルを含まない無効な入力として `{error, invalid_format}` を返す (spec は `{ok, binary()} | {error, invalid | invalid_format}`)
+- `decode0/2` の各節の `Next/bitstring` を `Next/binary` に変更した
+- `test/base32_crockford_test.erl` の `decode_nocheck_test` / `decode_hyphen_test` / `other1_test` / `other2_test` を `{ok, _}` マッチに更新し、不正文字・パディングビット非ゼロ・空入力・データ部不正のテスト (`decode_invalid_symbol_test` / `decode_nonzero_padding_test` / `decode_check_empty_test` / `decode_check_invalid_data_test`) を追加した
+- 修正後に `make fuzzing` を 60 秒実行し、クラッシュ 0 件とカバレッジ 248 行から 282 行への増加を確認した

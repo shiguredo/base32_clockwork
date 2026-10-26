@@ -49,5 +49,5 @@ decode_padding_test() ->
 
 
 decode_error_test() ->
-    ?assertEqual({error, invalid_size}, decode(<<"0">>)),
+    ?assertEqual({error, invalid_format}, decode(<<"0">>)),
     ?assertEqual({error, invalid_format}, decode(<<"012*">>)).
