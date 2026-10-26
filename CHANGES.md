@@ -43,7 +43,7 @@
 - [ADD] fuzzer による fuzzing を導入する
   - `make fuzzing` で全フォーマットの decode 経路に fuzzing を実行する
   - @voluntas
-- [UPDATE] rebar3 3.25.1 に更新する
+- [UPDATE] rebar3 3.28.0 に更新する
   - @voluntas
 - [FIX] import を利用しないようにする
   - @voluntas
