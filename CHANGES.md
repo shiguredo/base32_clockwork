@@ -26,19 +26,10 @@
   - `encode(0)` が `<<"0">>` を返す
   - integer 以外の入力は `function_clause` でクラッシュする
   - @voluntas
-- [ADD] PBT を追加
-  - crockford の integer 経路の encode はシンボル列を整数に戻すと元の整数と一致する
-  - @voluntas
 
 ### misc
 
-- [ADD] fuzzer による fuzzing を導入する
-  - `make fuzzing` で全フォーマットの decode 経路に fuzzing を実行する
-  - @voluntas
-
-### misc
-
-- [CHANGE] GitHub Actions のコンテナイメージをやめて shiguredo/setup-erlang で Erlang/OTP 29.0.6 / AWS-LC v5.8.0 をセットアップし、`minimum_otp_vsn` を 29.0 にする
+- [CHANGE] GitHub Actions のコンテナイメージをやめて shiguredo/setup-erlang で Erlang/OTP 29.1.2 / AWS-LC v5.11.0 をセットアップし、`minimum_otp_vsn` を 29.0 にする
   - @voluntas
 - [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、prek (`prek.toml`) 経由の efmt / elint (`shiguredo/erlang-pre-commit` 2026.4.0) に切り替える
   - CI は `j178/prek-action` で `prek.toml` のフックを実行する
@@ -47,7 +38,10 @@
 - [CHANGE] Slack 通知を shiguredo/github-actions の composite action (slack-notify) に移行する
   - @voluntas
 - [ADD] PBT を追加
-  - clockwork のみ
+  - clockwork と crockford (integer 経路のシンボル列は元の整数と一致する)
+  - @voluntas
+- [ADD] fuzzer による fuzzing を導入する
+  - `make fuzzing` で全フォーマットの decode 経路に fuzzing を実行する
   - @voluntas
 - [UPDATE] rebar3 3.25.1 に更新する
   - @voluntas
