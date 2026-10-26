@@ -49,5 +49,6 @@ tail_binary(_Value, 0) ->
 tail_binary(Value, DataBits) ->
     Size = DataBits div 8,
     Tail = binary:encode_unsigned(Value),
-    Pad = Size - byte_size(Tail),
-    <<0:Pad/unit:8, Tail/binary>>.
+    %% unit 指定は fuzzer の辞書生成が解釈できないため、ビット数でゼロ埋めする
+    PadBits = (Size - byte_size(Tail)) * 8,
+    <<0:PadBits, Tail/binary>>.
