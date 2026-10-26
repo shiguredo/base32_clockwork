@@ -88,7 +88,7 @@ symbol(31) ->
     $Z.
 
 
--spec decode(binary()) -> {ok, binary()} | {error, invalid_size | invalid_format}.
+-spec decode(binary()) -> {ok, binary()} | {error, invalid_format}.
 decode(Data) ->
     decode0(Data, []).
 
@@ -111,7 +111,8 @@ decode0(<<>>, Accu) ->
             end
     end;
 decode0(<<_:8>>, []) ->
-    {error, invalid_size};
+    %% シンボル 1 文字 (5 ビット) では 1 バイトに満たないため、形式として不完全な入力として拒否する
+    {error, invalid_format};
 decode0(<<"0", Next/binary>>, Accu) ->
     decode0(Next, [<<0:5>> | Accu]);
 decode0(<<"O", Next/binary>>, Accu) ->
