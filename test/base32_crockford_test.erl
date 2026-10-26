@@ -95,6 +95,13 @@ decode_check_invalid_data_test() ->
     ok.
 
 
+%% チェックサム不一致は {error, invalid_format} を返す。
+decode_check_mismatch_test() ->
+    ?assertEqual({error, invalid_format}, decode_check(<<"CRX">>)),
+    ?assertEqual({error, invalid_format}, decode_check(<<"CSQPYRK1E8U">>)),
+    ok.
+
+
 other1_test() ->
     P = <<1, 221, 62, 98, 254, 21, 78, 215, 43, 109, 45, 36, 57, 116, 102, 157>>,
     E = <<"07EKWRQY2N7DEAVD5MJ3JX36KM">>,

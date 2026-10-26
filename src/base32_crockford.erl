@@ -160,7 +160,7 @@ decode(Data) when is_binary(Data) ->
     decode0(Data, []).
 
 
--spec decode_check(binary()) -> {ok, binary()} | {error, invalid | invalid_format}.
+-spec decode_check(binary()) -> {ok, binary()} | {error, invalid_format}.
 decode_check(<<>>) ->
     %% チェックシンボルを含まない空入力は無効な入力として拒否する
     {error, invalid_format};
@@ -174,7 +174,7 @@ decode_check(Data) ->
                 true ->
                     {ok, Decoded};
                 false ->
-                    {error, invalid}
+                    {error, invalid_format}
             end;
         {error, invalid_format} ->
             {error, invalid_format}
