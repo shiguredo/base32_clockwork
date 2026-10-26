@@ -24,7 +24,7 @@ rebar3 compile
 ```bash
 $ rebar3 shell
 1> base32:decode(clockwork, <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>).
-<<"Wow, it really works!">>
+{ok, <<"Wow, it really works!">>}
 2> base32:encode(clockwork, <<"Wow, it really works!">>).
 <<"AXQQEB10D5T20WK5C5P6RY90EXQQ4TVK44">>
 ```
