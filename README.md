@@ -1,5 +1,10 @@
 # base32
 
+![GitHub Actions workflow](https://github.com/shiguredo/base32_clockwork/actions/workflows/ci.yml/badge.svg)
+[![GitHub tag](https://img.shields.io/github/tag/shiguredo/base32_clockwork.svg)](https://github.com/shiguredo/base32_clockwork)
+[![hex.pm version](https://img.shields.io/hexpm/v/base32_clockwork.svg)](https://hex.pm/packages/base32_clockwork)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 Erlang 向けの Base32 ライブラリです。次の種類のバージョンに対応しています。
 
 - [RFC 4648 \- The Base16, Base32, and Base64 Data Encodings](https://tools.ietf.org/html/rfc4648)
