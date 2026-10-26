@@ -3,25 +3,68 @@ name: ci
 on:
   push:
     paths-ignore:
-      - "doc/**"
-      - "**.rst"
-  pull_request:
+      - "LICENSE"
+      - "**.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    container:
-      image: shiguredo/erlang:otp-26.0-rc3-openssl-3.1.0-ubuntu-22.04-x86_64
-    env:
-      ERL_FLAGS: -enable-feature maybe_expr
+  # prek.toml のフックをすべて実行する (efmt / efmt-check / elint など)
+  check:
+    runs-on: ubuntu-slim
+    # prek の hook 環境準備 (初回や cache miss) を見込んで余裕を持たせる
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v3
-      - run: make
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.0
+
+  ci:
+    # ubuntu-slim は 1 vCPU / 15 分のプラットフォーム上限がある。初回の PLT
+    # キャッシュ miss を含めた ci ジョブの実測は 2 分強のため、10 分で打ち切って
+    # 異常を早く検知する
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # ビルド済みの Erlang/OTP 29.1.2 + AWS-LC v5.11.0 を使う
+      # (rebar.config の minimum_otp_vsn は 29.0)
+      - uses: shiguredo/setup-erlang@main
+        id: erlang
+        with:
+          otp-version: "29.1.2"
+          aws-lc-version: "v5.11.0"
+
+      # setup-erlang が配置するベース PLT は rebar.config の warnings 設定が一致
+      # しないと差分解析に使われず全ファイルを解析するため、project PLT を保存して
+      # 2 回目以降の解析を短くする。ソース変更は dialyzer がビームファイルの差分
+      # として検知して解析し直すので、キーには PLT の互換性を決める otp-version /
+      # aws-lc-version / rebar.config / rebar.lock だけを含める
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: _build/default/rebar3_${{ steps.erlang.outputs.otp-version }}_iplt
+          key: dialyzer-plt-${{ runner.os }}-${{ runner.arch }}-${{ steps.erlang.outputs.otp-version }}-${{ steps.erlang.outputs.aws-lc-version }}-${{ hashFiles('rebar.config', 'rebar.lock') }}
+
+      - run: make ci
+
+  slack_notify:
+    needs:
+      - check
+      - ci
+    runs-on: ubuntu-slim
+    if: always()
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    steps:
       - name: Slack Notification
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
+        uses: shiguredo/github-actions/.github/actions/slack-notify@main
+        with:
+          status: ${{ job.status }}
+          slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
+          slack_channel: ${{ secrets.SLACK_INTERNAL_CHANNEL }}
+          notify_mode: failure_and_fixed
         env:
-          SLACK_CHANNEL: ${{ secrets.SLACK_INTERNAL_CHANNEL }}
-          SLACK_COLOR: danger
-          SLACK_TITLE: Failure test
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          GH_TOKEN: ${{ github.token }}

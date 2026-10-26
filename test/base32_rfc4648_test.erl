@@ -2,26 +2,25 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--import(base32_rfc4648, [encode/1, decode/1]).
-
 
 encode_test() ->
-    ?assertEqual(<<"MY======">>, encode(<<"f">>)),
-    ?assertEqual(<<"MZXQ====">>, encode(<<"fo">>)),
-    ?assertEqual(<<"MZXW6===">>, encode(<<"foo">>)),
-    ?assertEqual(<<"MZXW6YQ=">>, encode(<<"foob">>)),
-    ?assertEqual(<<"MZXW6YTB">>, encode(<<"fooba">>)),
-    ?assertEqual(<<"MZXW6YTBOI======">>, encode(<<"foobar">>)).
+    ?assertEqual(<<"MY======">>, base32_rfc4648:encode(<<"f">>)),
+    ?assertEqual(<<"MZXQ====">>, base32_rfc4648:encode(<<"fo">>)),
+    ?assertEqual(<<"MZXW6===">>, base32_rfc4648:encode(<<"foo">>)),
+    ?assertEqual(<<"MZXW6YQ=">>, base32_rfc4648:encode(<<"foob">>)),
+    ?assertEqual(<<"MZXW6YTB">>, base32_rfc4648:encode(<<"fooba">>)),
+    ?assertEqual(<<"MZXW6YTBOI======">>, base32_rfc4648:encode(<<"foobar">>)).
 
 
 decode_test() ->
-    ?assertEqual({ok, <<"f">>}, decode(<<"MY======">>)),
-    ?assertEqual({ok, <<"fo">>}, decode(<<"MZXQ====">>)),
-    ?assertEqual({ok, <<"foo">>}, decode(<<"MZXW6===">>)),
-    ?assertEqual({ok, <<"foob">>}, decode(<<"MZXW6YQ=">>)),
-    ?assertEqual({ok, <<"fooba">>}, decode(<<"MZXW6YTB">>)),
-    ?assertEqual({ok, <<"foobar">>}, decode(<<"MZXW6YTBOI======">>)).
+    ?assertEqual({ok, <<"f">>}, base32_rfc4648:decode(<<"MY======">>)),
+    ?assertEqual({ok, <<"fo">>}, base32_rfc4648:decode(<<"MZXQ====">>)),
+    ?assertEqual({ok, <<"foo">>}, base32_rfc4648:decode(<<"MZXW6===">>)),
+    ?assertEqual({ok, <<"foob">>}, base32_rfc4648:decode(<<"MZXW6YQ=">>)),
+    ?assertEqual({ok, <<"fooba">>}, base32_rfc4648:decode(<<"MZXW6YTB">>)),
+    ?assertEqual({ok, <<"foobar">>}, base32_rfc4648:decode(<<"MZXW6YTBOI======">>)).
 
 
+%% 不正文字は catch-all 節で {error, invalid_format} を返す
 decode_error_test() ->
-    ?assertEqual({error, invalid_format}, decode(<<"MZXW6YTBOI======A">>)).
+    ?assertEqual({error, invalid_format}, base32_rfc4648:decode(<<"MZXW6YTBOI======A">>)).

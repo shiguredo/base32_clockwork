@@ -2,9 +2,64 @@
 
 ## develop
 
+## 2026.1.0
+
+**リリース日**: 2026-10-26
+
+- [CHANGE] デコーダーのエラー型を `{error, invalid_format}` に統一する
+  - `base32_crockford:decode/1` の返却型を `{ok, binary()} | {error, invalid_format}` に変更する
+  - `base32_crockford:decode_check/1` のチェックサム不一致の `{error, invalid}` をやめる
+  - `base32_clockwork:decode/1` の `{error, invalid_size}` をやめる (シンボル 1 文字のみの入力も `invalid_format` を返す)
+  - @voluntas
+- [UPDATE] decode と crockford の encode を入力長に比例する時間で処理する
+  - 8 シンボルごとに binary へまとめ、文字ごとの bitstring 確保をやめる
+  - crockford の encode は bignum の逐次除算をやめて、ビット列からシンボルを作る
+  - チェックシンボルはバイトごとに 37 の剰余を取り、巨大な整数を作らない
+  - @voluntas
+- [FIX] `base32_clockwork:decode/1` のパディング処理の欠陥を修正する
+  - シンボル数が N mod 8 = 3 または 6 の入力でクラッシュするのを修正する
+  - パディングビットが非ゼロの入力は `{error, invalid_format}` を返すようにする
+  - @voluntas
+- [FIX] `base32_crockford:decode/1` が不正文字やパディングビット非ゼロの入力でクラッシュするのを修正する
+  - fuzzing で検出された入力を回帰テストとして追加する
+  - @voluntas
+- [FIX] `base32_crockford:decode_check/1` が空入力でクラッシュするのを修正する
+  - 空入力は `{error, invalid_format}` を返す
+  - @voluntas
+- [FIX] `base32_crockford:decode_check/1` がハイフン付き入力と小文字のチェックシンボルを正しく扱えないのを修正する
+  - 分割前にハイフンを除去する
+  - チェックシンボルは大文字小文字を区別せずに比較する
+  - @voluntas
+- [FIX] `base32_crockford:encode/1` の integer 経路の桁数計算を修正する
+  - `encode(32)` が `<<"0">>` ではなく `<<"10">>` を返す
+  - `encode(0)` が `<<"0">>` を返す
+  - integer 以外の入力は `function_clause` でクラッシュする
+  - @voluntas
+
+### misc
+
+- [CHANGE] GitHub Actions のコンテナイメージをやめて shiguredo/setup-erlang で Erlang/OTP 29.1.2 / AWS-LC v5.11.0 をセットアップし、`minimum_otp_vsn` を 29.0 にする
+  - @voluntas
+- [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、prek (`prek.toml`) 経由の efmt / elint (`shiguredo/erlang-pre-commit` 2026.4.0) に切り替える
+  - CI は `j178/prek-action` で `prek.toml` のフックを実行する
+  - elint の newline_after_arrow に合わせて symbol/1 と case 節を整形する
+  - @voluntas
+- [CHANGE] Slack 通知を shiguredo/github-actions の composite action (slack-notify) に移行する
+  - @voluntas
+- [ADD] PBT を追加する
+  - clockwork と crockford (integer 経路のシンボル列は元の整数と一致する)
+  - @voluntas
+- [ADD] fuzzer による fuzzing を導入する
+  - `make fuzzing` で全フォーマットの decode 経路に fuzzing を実行する
+  - @voluntas
+- [UPDATE] rebar3 3.28.0 に更新する
+  - @voluntas
+- [UPDATE] src/ の import を削除する
+  - @voluntas
+
 ## 2023.1.0
 
-日付: 2023-05-02
+**リリース日**: 2023-05-02
 
 - [ADD] hex_efmt と hex_elvis を追加する
   - @voluntas

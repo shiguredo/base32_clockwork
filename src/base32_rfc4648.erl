@@ -2,8 +2,6 @@
 
 -export([encode/1, decode/1]).
 
--import(base32_utils, [rev_bits_list_to_binary/1]).
-
 
 -spec encode(binary()) -> binary().
 encode(Data) ->
@@ -160,141 +158,126 @@ encode1(<<1:1>>, Accu) ->
     [$Q | Accu].
 
 
--spec decode(binary()) -> {ok, binary()} | {error, atom()}.
+-spec decode(binary()) -> {ok, binary()} | {error, invalid_format}.
 decode(Data) ->
-    decode0(Data, []).
+    %% パディングが最後のシンボルを書き換えるため、確定は次シンボル到着まで遅らせる
+    decode0(Data, {0, 0, []}).
 
 
-decode0(<<>>, Accu) ->
-    {ok, rev_bits_list_to_binary(Accu)};
-decode0(<<"A", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<0:5>> | Accu]);
-decode0(<<"B", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"C", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<2:5>> | Accu]);
-decode0(<<"D", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<3:5>> | Accu]);
-decode0(<<"E", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<4:5>> | Accu]);
-decode0(<<"F", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<5:5>> | Accu]);
-decode0(<<"G", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<6:5>> | Accu]);
-decode0(<<"H", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<7:5>> | Accu]);
-decode0(<<"I", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<8:5>> | Accu]);
-decode0(<<"J", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<9:5>> | Accu]);
-decode0(<<"K", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<10:5>> | Accu]);
-decode0(<<"L", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<11:5>> | Accu]);
-decode0(<<"M", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<12:5>> | Accu]);
-decode0(<<"N", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<13:5>> | Accu]);
-decode0(<<"O", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<14:5>> | Accu]);
-decode0(<<"P", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<15:5>> | Accu]);
-decode0(<<"Q", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<16:5>> | Accu]);
-decode0(<<"R", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<17:5>> | Accu]);
-decode0(<<"S", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<18:5>> | Accu]);
-decode0(<<"T", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<19:5>> | Accu]);
-decode0(<<"U", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<20:5>> | Accu]);
-decode0(<<"V", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<21:5>> | Accu]);
-decode0(<<"W", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<22:5>> | Accu]);
-decode0(<<"X", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<23:5>> | Accu]);
-decode0(<<"Y", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<24:5>> | Accu]);
-decode0(<<"Z", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<25:5>> | Accu]);
-decode0(<<"2", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<26:5>> | Accu]);
-decode0(<<"3", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<27:5>> | Accu]);
-decode0(<<"4", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<28:5>> | Accu]);
-decode0(<<"5", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<29:5>> | Accu]);
-decode0(<<"6", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<30:5>> | Accu]);
-decode0(<<"7", Next/bitstring>>, Accu) ->
-    decode0(Next, [<<31:5>> | Accu]);
+decode0(<<>>, Acc) ->
+    finalize_bits(Acc);
+decode0(<<"A", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(0, Acc));
+decode0(<<"B", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(1, Acc));
+decode0(<<"C", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(2, Acc));
+decode0(<<"D", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(3, Acc));
+decode0(<<"E", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(4, Acc));
+decode0(<<"F", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(5, Acc));
+decode0(<<"G", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(6, Acc));
+decode0(<<"H", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(7, Acc));
+decode0(<<"I", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(8, Acc));
+decode0(<<"J", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(9, Acc));
+decode0(<<"K", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(10, Acc));
+decode0(<<"L", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(11, Acc));
+decode0(<<"M", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(12, Acc));
+decode0(<<"N", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(13, Acc));
+decode0(<<"O", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(14, Acc));
+decode0(<<"P", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(15, Acc));
+decode0(<<"Q", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(16, Acc));
+decode0(<<"R", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(17, Acc));
+decode0(<<"S", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(18, Acc));
+decode0(<<"T", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(19, Acc));
+decode0(<<"U", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(20, Acc));
+decode0(<<"V", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(21, Acc));
+decode0(<<"W", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(22, Acc));
+decode0(<<"X", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(23, Acc));
+decode0(<<"Y", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(24, Acc));
+decode0(<<"Z", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(25, Acc));
+decode0(<<"2", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(26, Acc));
+decode0(<<"3", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(27, Acc));
+decode0(<<"4", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(28, Acc));
+decode0(<<"5", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(29, Acc));
+decode0(<<"6", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(30, Acc));
+decode0(<<"7", Next/bitstring>>, Acc) ->
+    decode0(Next, push_symbol(31, Acc));
 
-decode0(<<"======">>, [<<0:5>> | Accu]) ->
-    decode0(<<>>, [<<0:3>> | Accu]);
-decode0(<<"======">>, [<<4:5>> | Accu]) ->
-    decode0(<<>>, [<<1:3>> | Accu]);
-decode0(<<"======">>, [<<8:5>> | Accu]) ->
-    decode0(<<>>, [<<2:3>> | Accu]);
-decode0(<<"======">>, [<<12:5>> | Accu]) ->
-    decode0(<<>>, [<<3:3>> | Accu]);
-decode0(<<"======">>, [<<16:5>> | Accu]) ->
-    decode0(<<>>, [<<4:3>> | Accu]);
-decode0(<<"======">>, [<<20:5>> | Accu]) ->
-    decode0(<<>>, [<<5:3>> | Accu]);
-decode0(<<"======">>, [<<24:5>> | Accu]) ->
-    decode0(<<>>, [<<6:3>> | Accu]);
-decode0(<<"======">>, [<<28:5>> | Accu]) ->
-    decode0(<<>>, [<<7:3>> | Accu]);
-
-decode0(<<"====">>, [<<0:5>> | Accu]) ->
-    decode0(<<>>, [<<0:1>> | Accu]);
-decode0(<<"====">>, [<<16:5>> | Accu]) ->
-    decode0(<<>>, [<<1:1>> | Accu]);
-
-decode0(<<"===">>, [<<0:5>> | Accu]) ->
-    decode0(<<>>, [<<0:4>> | Accu]);
-decode0(<<"===">>, [<<2:5>> | Accu]) ->
-    decode0(<<>>, [<<1:4>> | Accu]);
-decode0(<<"===">>, [<<4:5>> | Accu]) ->
-    decode0(<<>>, [<<2:4>> | Accu]);
-decode0(<<"===">>, [<<6:5>> | Accu]) ->
-    decode0(<<>>, [<<3:4>> | Accu]);
-decode0(<<"===">>, [<<8:5>> | Accu]) ->
-    decode0(<<>>, [<<4:4>> | Accu]);
-decode0(<<"===">>, [<<10:5>> | Accu]) ->
-    decode0(<<>>, [<<5:4>> | Accu]);
-decode0(<<"===">>, [<<12:5>> | Accu]) ->
-    decode0(<<>>, [<<6:4>> | Accu]);
-decode0(<<"===">>, [<<14:5>> | Accu]) ->
-    decode0(<<>>, [<<7:4>> | Accu]);
-decode0(<<"===">>, [<<16:5>> | Accu]) ->
-    decode0(<<>>, [<<8:4>> | Accu]);
-decode0(<<"===">>, [<<18:5>> | Accu]) ->
-    decode0(<<>>, [<<9:4>> | Accu]);
-decode0(<<"===">>, [<<20:5>> | Accu]) ->
-    decode0(<<>>, [<<10:4>> | Accu]);
-decode0(<<"===">>, [<<22:5>> | Accu]) ->
-    decode0(<<>>, [<<11:4>> | Accu]);
-decode0(<<"===">>, [<<24:5>> | Accu]) ->
-    decode0(<<>>, [<<12:4>> | Accu]);
-decode0(<<"===">>, [<<26:5>> | Accu]) ->
-    decode0(<<>>, [<<13:4>> | Accu]);
-decode0(<<"===">>, [<<28:5>> | Accu]) ->
-    decode0(<<>>, [<<14:4>> | Accu]);
-decode0(<<"===">>, [<<30:5>> | Accu]) ->
-    decode0(<<>>, [<<15:4>> | Accu]);
-
-decode0(<<"=">>, [<<0:5>> | Accu]) ->
-    decode0(<<>>, [<<0:2>> | Accu]);
-decode0(<<"=">>, [<<8:5>> | Accu]) ->
-    decode0(<<>>, [<<1:2>> | Accu]);
-decode0(<<"=">>, [<<16:5>> | Accu]) ->
-    decode0(<<>>, [<<2:2>> | Accu]);
-decode0(<<"=">>, [<<24:5>> | Accu]) ->
-    decode0(<<>>, [<<3:2>> | Accu]);
+decode0(<<"======">>, Acc) ->
+    finalize_padding(Acc, 3);
+decode0(<<"====">>, Acc) ->
+    finalize_padding(Acc, 1);
+decode0(<<"===">>, Acc) ->
+    finalize_padding(Acc, 4);
+decode0(<<"=">>, Acc) ->
+    finalize_padding(Acc, 2);
 
 decode0(_, _) ->
     {error, invalid_format}.
+
+
+%% 5 ビットシンボルを追加する。
+%% パディングは最後のシンボルを書き換えるため、8 シンボルちょうどでは確定しない。
+%% 次のシンボルが来た時点で、先行する 40 ビットを 5 byte として確定する。
+push_symbol(Value, {Acc, 40, Out}) ->
+    {Value, 5, [<<Acc:40>> | Out]};
+push_symbol(Value, {Acc, BitCount, Out}) ->
+    {(Acc bsl 5) bor Value, BitCount + 5, Out}.
+
+
+%% 最後の 5 ビットシンボルの下位ビットが 0 なら、上位 KeepBits ビットだけ残して終える。
+%% 下位ビットが 0 でない入力は invalid_format を返す。
+finalize_padding(Acc, KeepBits) ->
+    Drop = 5 - KeepBits,
+    case take_last_symbol(Acc) of
+        {Last, Rest} when (Last band ((1 bsl Drop) - 1)) =:= 0 ->
+            finalize_bits(push_bits(Last bsr Drop, KeepBits, Rest));
+        _ ->
+            {error, invalid_format}
+    end.
+
+
+take_last_symbol({Acc, BitCount, Out}) when BitCount >= 5 ->
+    {Acc band 31, {Acc bsr 5, BitCount - 5, Out}};
+take_last_symbol(_) ->
+    error.
+
+
+push_bits(Value, Len, {Acc, BitCount, Out}) ->
+    {(Acc bsl Len) bor Value, BitCount + Len, Out}.
+
+
+%% パディングなしの端数はバイト境界へ切り詰めず、ビット列のまま返す。
+finalize_bits({_Acc, 0, Out}) ->
+    {ok, iolist_to_binary(lists:reverse(Out))};
+finalize_bits({Acc, BitCount, Out}) ->
+    Prefix = iolist_to_binary(lists:reverse(Out)),
+    {ok, <<Prefix/binary, Acc:BitCount>>}.
