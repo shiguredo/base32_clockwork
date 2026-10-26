@@ -27,6 +27,34 @@ encode_check_test() ->
     ?assertEqual(<<"CSQPYRK1E86">>, encode_check(<<"foobar">>)).
 
 
+%% encode/1 の integer 経路は V を 5 ビットごとのシンボル列に分解した
+%% canonical な表現を返す。桁数境界 (2^5, 2^10, 2^15) の具体値を含める。
+encode_integer_test() ->
+    ?assertEqual(<<"0">>, encode(0)),
+    ?assertEqual(<<"1">>, encode(1)),
+    ?assertEqual(<<"Z">>, encode(31)),
+    ?assertEqual(<<"10">>, encode(32)),
+    ?assertEqual(<<"1A">>, encode(42)),
+    ?assertEqual(<<"30">>, encode(96)),
+    ?assertEqual(<<"7Z">>, encode(255)),
+    ?assertEqual(<<"100">>, encode(1024)),
+    ok.
+
+
+%% integer 以外の入力は spec 違反のため function_clause でクラッシュする。
+encode_invalid_input_test() ->
+    ?assertError(function_clause, encode(hello)),
+    ?assertError(function_clause, encode(-1)),
+    ok.
+
+
+%% encode_check/1 の integer 経路は encode0/2 を共有するため、
+%% データ部の桁数が正しい canonical な表現になる。
+encode_check_integer_test() ->
+    ?assertEqual(<<"1A5">>, encode_check(42)),
+    ok.
+
+
 decode_nocheck_test() ->
     ?assertEqual({ok, <<"f">>}, decode(<<"CR">>)),
     ?assertEqual({ok, <<"fo">>}, decode(<<"CSQG">>)),

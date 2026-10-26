@@ -21,6 +21,14 @@
   - 分割前にハイフンを除去する
   - チェックシンボルは大文字小文字を区別せずに比較する
   - @voluntas
+- [FIX] `base32_crockford:encode/1` の integer 経路の桁数計算を修正する
+  - `encode(32)` が `<<"0">>` ではなく `<<"10">>` を返す
+  - `encode(0)` が `<<"0">>` を返す
+  - integer 以外の入力は `function_clause` でクラッシュする
+  - @voluntas
+- [ADD] PBT を追加
+  - crockford の integer 経路の encode はシンボル列を整数に戻すと元の整数と一致する
+  - @voluntas
 
 ### misc
 

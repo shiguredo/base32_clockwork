@@ -56,15 +56,17 @@ encode0(Data, Accu) when is_binary(Data) ->
                     BaseCount + 1
             end,
     encode1(data_to_integer(Data, true), Count, Accu);
-encode0(Value, Accu) ->
-    BaseCount = Value div 32,
-    Count = case Value rem 32 of
-                0 ->
-                    BaseCount;
-                _ ->
-                    BaseCount + 1
-            end,
-    encode1(Value, Count, Accu).
+encode0(Value, Accu) when is_integer(Value), Value >= 0 ->
+    encode1(Value, digit_count(Value), Accu).
+
+
+%% Value を表すのに必要なシンボルの個数 (32 進表現の桁数) を返す。
+%% 0 は 1 桁として扱う。
+-spec digit_count(non_neg_integer()) -> pos_integer().
+digit_count(Value) when Value < 32 ->
+    1;
+digit_count(Value) ->
+    1 + digit_count(Value div 32).
 
 
 encode1(_, 0, Accu) ->
