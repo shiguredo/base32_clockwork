@@ -3,32 +3,6 @@
 -export([encode/1, encode_check/1, decode/1, decode_check/1]).
 
 
-data_to_integer(Data, Padding) ->
-    data_to_integer0(Data, Padding, 0).
-
-
-data_to_integer0(<<>>, _, N) ->
-    N;
-data_to_integer0(<<Bits:1>>, true, N) ->
-    (N bsl 5) bor (Bits bsl 4);
-data_to_integer0(<<Bits:2>>, true, N) ->
-    (N bsl 5) bor (Bits bsl 3);
-data_to_integer0(<<Bits:3>>, true, N) ->
-    (N bsl 5) bor (Bits bsl 2);
-data_to_integer0(<<Bits:4>>, true, N) ->
-    (N bsl 5) bor (Bits bsl 1);
-data_to_integer0(<<Bits:1>>, false, N) ->
-    (N bsl 1) bor Bits;
-data_to_integer0(<<Bits:2>>, false, N) ->
-    (N bsl 2) bor Bits;
-data_to_integer0(<<Bits:3>>, false, N) ->
-    (N bsl 3) bor Bits;
-data_to_integer0(<<Bits:4>>, false, N) ->
-    (N bsl 4) bor Bits;
-data_to_integer0(<<Bits:5, Next/bitstring>>, Padding, N) ->
-    data_to_integer0(Next, Padding, (N bsl 5) bor Bits).
-
-
 %% 負整数は encode0/2 の非負条件で function_clause になるため non_neg_integer() に限定する
 -spec encode(binary() | non_neg_integer()) -> binary().
 encode(Value) ->
@@ -38,48 +12,78 @@ encode(Value) ->
 
 -spec encode_check(binary() | non_neg_integer()) -> binary().
 encode_check(Data) when is_binary(Data) ->
-    Check = check_symbol(data_to_integer(Data, false)),
+    Check = symbol(mod37(Data)),
     Encoded = encode0(Data, [Check]),
     list_to_binary(Encoded);
-encode_check(Value) ->
-    Check = check_symbol(Value),
+encode_check(Value) when is_integer(Value), Value >= 0 ->
+    Check = symbol(mod37(binary:encode_unsigned(Value))),
     Encoded = encode0(Value, [Check]),
     list_to_binary(Encoded).
 
 
+%% シンボルは先頭から順に作るが、リストは末尾追加を避けるため逆順に積む。
+%% 呼び出し側の lists:reverse/2 で正順に戻し、Accu (チェックシンボル) を末尾に付ける。
 encode0(Data, Accu) when is_binary(Data) ->
-    Size = size(Data) * 8,
-    BaseCount = Size div 5,
-    Count = case Size rem 5 of
-                0 ->
-                    BaseCount;
-                _ ->
-                    BaseCount + 1
-            end,
-    encode1(data_to_integer(Data, true), Count, Accu);
+    lists:reverse(symbols_from_bits(Data, []), Accu);
 encode0(Value, Accu) when is_integer(Value), Value >= 0 ->
-    encode1(Value, digit_count(Value), Accu).
+    lists:reverse(symbols_from_integer(Value), Accu).
 
 
-%% Value を表すのに必要なシンボルの個数 (32 進表現の桁数) を返す。
-%% 0 は 1 桁として扱う。
--spec digit_count(non_neg_integer()) -> pos_integer().
-digit_count(Value) when Value < 32 ->
-    1;
-digit_count(Value) ->
-    1 + digit_count(Value div 32).
+%% バイト列を 5 ビットずつ読む。端数はシンボルの上位に寄せ、下位を 0 で埋める。
+symbols_from_bits(<<Bits:5, Next/bits>>, Acc) ->
+    symbols_from_bits(Next, [symbol(Bits) | Acc]);
+symbols_from_bits(<<Bits:4>>, Acc) ->
+    [symbol(Bits bsl 1) | Acc];
+symbols_from_bits(<<Bits:3>>, Acc) ->
+    [symbol(Bits bsl 2) | Acc];
+symbols_from_bits(<<Bits:2>>, Acc) ->
+    [symbol(Bits bsl 3) | Acc];
+symbols_from_bits(<<Bits:1>>, Acc) ->
+    [symbol(Bits bsl 4) | Acc];
+symbols_from_bits(<<>>, Acc) ->
+    Acc.
 
 
-encode1(_, 0, Accu) ->
-    Accu;
-encode1(Value, Count, Accu) ->
-    Next = Value div 32,
-    SymVal = Value rem 32,
-    encode1(Next, Count - 1, [symbol(SymVal) | Accu]).
+%% 0 は 1 桁の "0" とする。それ以外は必要な 5 ビット桁だけを使い、先頭の 0 は付けない。
+symbols_from_integer(0) ->
+    [symbol(0)];
+symbols_from_integer(Value) ->
+    TotalBits = symbol_count(Value) * 5,
+    <<Bits:TotalBits/bits>> = <<Value:TotalBits>>,
+    symbols_from_bits(Bits, []).
 
 
-check_symbol(Value) ->
-    symbol(Value rem 37).
+%% Value を表すのに必要なシンボル数 (32 進の桁数)。
+symbol_count(Value) ->
+    (bit_length(Value) + 4) div 5.
+
+
+%% 最上位ビットの位置 (1 始まり)。
+bit_length(Value) ->
+    Bin = binary:encode_unsigned(Value),
+    (byte_size(Bin) - 1) * 8 + byte_bit_length(binary:first(Bin)).
+
+
+byte_bit_length(Byte) ->
+    byte_bit_length(Byte, 0).
+
+
+byte_bit_length(0, Length) ->
+    Length;
+byte_bit_length(Byte, Length) ->
+    byte_bit_length(Byte bsr 1, Length + 1).
+
+
+%% バイト列を符号なし整数とみなした 37 の剰余。
+%% 整数を一度に作ると大きい入力で system_limit になるため、1 バイトずつ畳む。
+mod37(Data) ->
+    mod37(Data, 0).
+
+
+mod37(<<>>, Acc) ->
+    Acc;
+mod37(<<Byte, Rest/binary>>, Acc) ->
+    mod37(Rest, (Acc * 256 + Byte) rem 37).
 
 
 symbol(0) ->
@@ -160,7 +164,7 @@ symbol(36) ->
 
 -spec decode(binary()) -> {ok, binary()} | {error, invalid_format}.
 decode(Data) when is_binary(Data) ->
-    decode0(Data, []).
+    decode0(Data, base32_utils:new_decode_acc()).
 
 
 -spec decode_check(binary()) -> {ok, binary()} | {error, invalid_format}.
@@ -192,7 +196,7 @@ decode_check0(Hyphenless) ->
 %% デコード結果から計算したチェックシンボルが入力のチェックシンボルと一致するかを判定する
 -spec match_check_symbol(binary(), byte()) -> {ok, binary()} | {error, invalid_format}.
 match_check_symbol(Decoded, Expectedcheck) ->
-    case check_symbol(data_to_integer(Decoded, false)) =:= normalize_check_symbol(Expectedcheck) of
+    case symbol(mod37(Decoded)) =:= normalize_check_symbol(Expectedcheck) of
         true ->
             {ok, Decoded};
         false ->
@@ -208,144 +212,129 @@ normalize_check_symbol(C) ->
     C.
 
 
-decode0(<<>>, Accu) ->
-    %% 全ビットを連結した後、バイト境界に収まらない末尾ビットをパディングとして除去する
-    Decoded0 = base32_utils:rev_bits_list_to_binary(Accu),
-    DecodedSize = bit_size(Decoded0),
-    case DecodedSize rem 8 of
-        0 ->
-            {ok, Decoded0};
-        PaddingSize ->
-            %% 正しいエンコード結果では末尾がゼロで埋まるため、非ゼロは invalid_format として拒否する
-            DataSize = DecodedSize - PaddingSize,
-            case Decoded0 of
-                <<Decoded1:DataSize/bitstring, 0:PaddingSize>> ->
-                    {ok, Decoded1};
-                _ ->
-                    {error, invalid_format}
-            end
-    end;
-decode0(<<"0", Next/binary>>, Accu) ->
-    decode0(Next, [<<0:5>> | Accu]);
-decode0(<<"O", Next/binary>>, Accu) ->
-    decode0(Next, [<<0:5>> | Accu]);
-decode0(<<"o", Next/binary>>, Accu) ->
-    decode0(Next, [<<0:5>> | Accu]);
-decode0(<<"1", Next/binary>>, Accu) ->
-    decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"I", Next/binary>>, Accu) ->
-    decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"i", Next/binary>>, Accu) ->
-    decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"L", Next/binary>>, Accu) ->
-    decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"l", Next/binary>>, Accu) ->
-    decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"2", Next/binary>>, Accu) ->
-    decode0(Next, [<<2:5>> | Accu]);
-decode0(<<"3", Next/binary>>, Accu) ->
-    decode0(Next, [<<3:5>> | Accu]);
-decode0(<<"4", Next/binary>>, Accu) ->
-    decode0(Next, [<<4:5>> | Accu]);
-decode0(<<"5", Next/binary>>, Accu) ->
-    decode0(Next, [<<5:5>> | Accu]);
-decode0(<<"6", Next/binary>>, Accu) ->
-    decode0(Next, [<<6:5>> | Accu]);
-decode0(<<"7", Next/binary>>, Accu) ->
-    decode0(Next, [<<7:5>> | Accu]);
-decode0(<<"8", Next/binary>>, Accu) ->
-    decode0(Next, [<<8:5>> | Accu]);
-decode0(<<"9", Next/binary>>, Accu) ->
-    decode0(Next, [<<9:5>> | Accu]);
-decode0(<<"A", Next/binary>>, Accu) ->
-    decode0(Next, [<<10:5>> | Accu]);
-decode0(<<"a", Next/binary>>, Accu) ->
-    decode0(Next, [<<10:5>> | Accu]);
-decode0(<<"B", Next/binary>>, Accu) ->
-    decode0(Next, [<<11:5>> | Accu]);
-decode0(<<"b", Next/binary>>, Accu) ->
-    decode0(Next, [<<11:5>> | Accu]);
-decode0(<<"C", Next/binary>>, Accu) ->
-    decode0(Next, [<<12:5>> | Accu]);
-decode0(<<"c", Next/binary>>, Accu) ->
-    decode0(Next, [<<12:5>> | Accu]);
-decode0(<<"D", Next/binary>>, Accu) ->
-    decode0(Next, [<<13:5>> | Accu]);
-decode0(<<"d", Next/binary>>, Accu) ->
-    decode0(Next, [<<13:5>> | Accu]);
-decode0(<<"E", Next/binary>>, Accu) ->
-    decode0(Next, [<<14:5>> | Accu]);
-decode0(<<"e", Next/binary>>, Accu) ->
-    decode0(Next, [<<14:5>> | Accu]);
-decode0(<<"F", Next/binary>>, Accu) ->
-    decode0(Next, [<<15:5>> | Accu]);
-decode0(<<"f", Next/binary>>, Accu) ->
-    decode0(Next, [<<15:5>> | Accu]);
-decode0(<<"G", Next/binary>>, Accu) ->
-    decode0(Next, [<<16:5>> | Accu]);
-decode0(<<"g", Next/binary>>, Accu) ->
-    decode0(Next, [<<16:5>> | Accu]);
-decode0(<<"H", Next/binary>>, Accu) ->
-    decode0(Next, [<<17:5>> | Accu]);
-decode0(<<"h", Next/binary>>, Accu) ->
-    decode0(Next, [<<17:5>> | Accu]);
-decode0(<<"J", Next/binary>>, Accu) ->
-    decode0(Next, [<<18:5>> | Accu]);
-decode0(<<"j", Next/binary>>, Accu) ->
-    decode0(Next, [<<18:5>> | Accu]);
-decode0(<<"K", Next/binary>>, Accu) ->
-    decode0(Next, [<<19:5>> | Accu]);
-decode0(<<"k", Next/binary>>, Accu) ->
-    decode0(Next, [<<19:5>> | Accu]);
-decode0(<<"M", Next/binary>>, Accu) ->
-    decode0(Next, [<<20:5>> | Accu]);
-decode0(<<"m", Next/binary>>, Accu) ->
-    decode0(Next, [<<20:5>> | Accu]);
-decode0(<<"N", Next/binary>>, Accu) ->
-    decode0(Next, [<<21:5>> | Accu]);
-decode0(<<"n", Next/binary>>, Accu) ->
-    decode0(Next, [<<21:5>> | Accu]);
-decode0(<<"P", Next/binary>>, Accu) ->
-    decode0(Next, [<<22:5>> | Accu]);
-decode0(<<"p", Next/binary>>, Accu) ->
-    decode0(Next, [<<22:5>> | Accu]);
-decode0(<<"Q", Next/binary>>, Accu) ->
-    decode0(Next, [<<23:5>> | Accu]);
-decode0(<<"q", Next/binary>>, Accu) ->
-    decode0(Next, [<<23:5>> | Accu]);
-decode0(<<"R", Next/binary>>, Accu) ->
-    decode0(Next, [<<24:5>> | Accu]);
-decode0(<<"r", Next/binary>>, Accu) ->
-    decode0(Next, [<<24:5>> | Accu]);
-decode0(<<"S", Next/binary>>, Accu) ->
-    decode0(Next, [<<25:5>> | Accu]);
-decode0(<<"s", Next/binary>>, Accu) ->
-    decode0(Next, [<<25:5>> | Accu]);
-decode0(<<"T", Next/binary>>, Accu) ->
-    decode0(Next, [<<26:5>> | Accu]);
-decode0(<<"t", Next/binary>>, Accu) ->
-    decode0(Next, [<<26:5>> | Accu]);
-decode0(<<"V", Next/binary>>, Accu) ->
-    decode0(Next, [<<27:5>> | Accu]);
-decode0(<<"v", Next/binary>>, Accu) ->
-    decode0(Next, [<<27:5>> | Accu]);
-decode0(<<"W", Next/binary>>, Accu) ->
-    decode0(Next, [<<28:5>> | Accu]);
-decode0(<<"w", Next/binary>>, Accu) ->
-    decode0(Next, [<<28:5>> | Accu]);
-decode0(<<"X", Next/binary>>, Accu) ->
-    decode0(Next, [<<29:5>> | Accu]);
-decode0(<<"x", Next/binary>>, Accu) ->
-    decode0(Next, [<<29:5>> | Accu]);
-decode0(<<"Y", Next/binary>>, Accu) ->
-    decode0(Next, [<<30:5>> | Accu]);
-decode0(<<"y", Next/binary>>, Accu) ->
-    decode0(Next, [<<30:5>> | Accu]);
-decode0(<<"Z", Next/binary>>, Accu) ->
-    decode0(Next, [<<31:5>> | Accu]);
-decode0(<<"z", Next/binary>>, Accu) ->
-    decode0(Next, [<<31:5>> | Accu]);
-decode0(<<"-", Next/binary>>, Accu) ->
-    decode0(Next, Accu);
+decode0(<<>>, Acc) ->
+    base32_utils:finalize_decode(Acc);
+decode0(<<"0", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(0, Acc));
+decode0(<<"O", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(0, Acc));
+decode0(<<"o", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(0, Acc));
+decode0(<<"1", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(1, Acc));
+decode0(<<"I", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(1, Acc));
+decode0(<<"i", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(1, Acc));
+decode0(<<"L", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(1, Acc));
+decode0(<<"l", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(1, Acc));
+decode0(<<"2", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(2, Acc));
+decode0(<<"3", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(3, Acc));
+decode0(<<"4", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(4, Acc));
+decode0(<<"5", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(5, Acc));
+decode0(<<"6", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(6, Acc));
+decode0(<<"7", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(7, Acc));
+decode0(<<"8", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(8, Acc));
+decode0(<<"9", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(9, Acc));
+decode0(<<"A", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(10, Acc));
+decode0(<<"a", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(10, Acc));
+decode0(<<"B", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(11, Acc));
+decode0(<<"b", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(11, Acc));
+decode0(<<"C", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(12, Acc));
+decode0(<<"c", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(12, Acc));
+decode0(<<"D", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(13, Acc));
+decode0(<<"d", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(13, Acc));
+decode0(<<"E", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(14, Acc));
+decode0(<<"e", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(14, Acc));
+decode0(<<"F", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(15, Acc));
+decode0(<<"f", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(15, Acc));
+decode0(<<"G", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(16, Acc));
+decode0(<<"g", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(16, Acc));
+decode0(<<"H", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(17, Acc));
+decode0(<<"h", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(17, Acc));
+decode0(<<"J", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(18, Acc));
+decode0(<<"j", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(18, Acc));
+decode0(<<"K", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(19, Acc));
+decode0(<<"k", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(19, Acc));
+decode0(<<"M", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(20, Acc));
+decode0(<<"m", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(20, Acc));
+decode0(<<"N", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(21, Acc));
+decode0(<<"n", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(21, Acc));
+decode0(<<"P", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(22, Acc));
+decode0(<<"p", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(22, Acc));
+decode0(<<"Q", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(23, Acc));
+decode0(<<"q", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(23, Acc));
+decode0(<<"R", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(24, Acc));
+decode0(<<"r", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(24, Acc));
+decode0(<<"S", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(25, Acc));
+decode0(<<"s", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(25, Acc));
+decode0(<<"T", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(26, Acc));
+decode0(<<"t", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(26, Acc));
+decode0(<<"V", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(27, Acc));
+decode0(<<"v", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(27, Acc));
+decode0(<<"W", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(28, Acc));
+decode0(<<"w", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(28, Acc));
+decode0(<<"X", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(29, Acc));
+decode0(<<"x", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(29, Acc));
+decode0(<<"Y", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(30, Acc));
+decode0(<<"y", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(30, Acc));
+decode0(<<"Z", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(31, Acc));
+decode0(<<"z", Next/binary>>, Acc) ->
+    decode0(Next, base32_utils:push_symbol(31, Acc));
+decode0(<<"-", Next/binary>>, Acc) ->
+    decode0(Next, Acc);
 decode0(_, _) ->
     {error, invalid_format}.

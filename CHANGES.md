@@ -7,6 +7,11 @@
   - `base32_crockford:decode_check/1` のチェックサム不一致の `{error, invalid}` をやめる
   - `base32_clockwork:decode/1` の `{error, invalid_size}` をやめる (シンボル 1 文字のみの入力も `invalid_format` を返す)
   - @voluntas
+- [UPDATE] decode と crockford の encode を入力長に比例する時間で処理する
+  - 8 シンボルごとに binary へまとめ、文字ごとの bitstring 確保をやめる
+  - crockford の encode は bignum の逐次除算をやめて、ビット列からシンボルを作る
+  - チェックシンボルはバイトごとに 37 の剰余を取り、巨大な整数を作らない
+  - @voluntas
 - [FIX] `base32_clockwork:decode/1` のパディング処理の欠陥を修正する
   - シンボル数が N mod 8 = 3 または 6 の入力でクラッシュするのを修正する
   - パディングビットが非ゼロの入力は `{error, invalid_format}` を返すようにする
