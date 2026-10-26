@@ -29,13 +29,14 @@ data_to_integer0(<<Bits:5, Next/bitstring>>, Padding, N) ->
     data_to_integer0(Next, Padding, (N bsl 5) bor Bits).
 
 
--spec encode(binary() | integer()) -> binary().
+%% 負整数は encode0/2 の非負条件で function_clause になるため non_neg_integer() に限定する
+-spec encode(binary() | non_neg_integer()) -> binary().
 encode(Value) ->
     Encoded = encode0(Value, []),
     list_to_binary(Encoded).
 
 
--spec encode_check(binary()) -> binary().
+-spec encode_check(binary() | non_neg_integer()) -> binary().
 encode_check(Data) when is_binary(Data) ->
     Check = check_symbol(data_to_integer(Data, false)),
     Encoded = encode0(Data, [Check]),
