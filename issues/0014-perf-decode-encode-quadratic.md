@@ -6,6 +6,7 @@
 - Model: qwen3.8-max-preview
 - Branch: feature/refactor-performance
 - Polished: {YYYY-MM-DD}
+- Refreshed: 2026-10-26
 
 ## 目的
 
@@ -17,15 +18,15 @@ UUID（16 バイト → 26 文字）では問題ないが、1MB 入力では数�
 
 ## 現状
 
-1. **`base32_utils:rev_bits_list_to_binary0`**（`src/base32_utils.erl:12-13`）: `<<Bits/bitstring, Accu/bitstring>>` が各ステップで Accu 全体をコピー。全体で O(n^2)。
+1. **`base32_utils:rev_bits_list_to_binary0`**（`src/base32_utils.erl` の `rev_bits_list_to_binary0/2` の再帰節）: `<<Bits/bitstring, Accu/bitstring>>` が各ステップで Accu 全体をコピー。全体で O(n^2)。
 
-2. **`base32_crockford:data_to_integer0`**（`src/base32_crockford.erl:28-29`）: `(N bsl 5) bor Bits` が各ステップで bignum の全 limb をコピー+シフト。全体で O(n^2)。
+2. **`base32_crockford:data_to_integer0`**（`src/base32_crockford.erl` の `data_to_integer0/3` の再帰節）: `(N bsl 5) bor Bits` が各ステップで bignum の全 limb をコピー+シフト。全体で O(n^2)。
 
-3. **`base32_crockford:encode1`**（`src/base32_crockford.erl:68-71`）: `Value div 32` / `Value rem 32` が各ステップで bignum の除算。全体で O(n^2)。
+3. **`base32_crockford:encode1`**（`src/base32_crockford.erl` の `encode1/3`）: `Value div 32` / `Value rem 32` が各ステップで bignum の除算。全体で O(n^2)。
 
 4. **decode 経路のメモリ増幅**（全 decode モジュール）: 各文字ごとに 5-bit bitstring をヒープに確保。1MB 入力で約 100 倍のメモリ増幅。
 
-5. **`base32_clockwork:decode0` の `bits_list_size` 再走査**（`src/base32_clockwork.erl:66-67`）: decode 完了時に Accu リスト全体を再走査。カウンタで保持すれば不要。
+5. **`base32_clockwork:decode0` の `bits_list_size` 再走査は解消済み**: 0001 対応 (79982cb) で `decode0/2` の完了節が全ビット連結後の `bit_size` でパディングを検証する方式に書き換えられ、再走査は発生しなくなった。ただし副産物として `base32_utils:bits_list_size/1` が呼び出し元のない dead code になっているため、本 issue で削除する。
 
 ## 設計方針
 
