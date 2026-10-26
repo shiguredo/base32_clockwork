@@ -2,7 +2,7 @@
 
 - Priority: Low
 - Created: 2026-07-20
-- Completed: {YYYY-MM-DD}
+- Completed: 2026-10-26
 - Model: qwen3.8-max-preview
 - Branch: feature/refactor-performance
 - Polished: {YYYY-MM-DD}
@@ -42,5 +42,8 @@ UUID（16 バイト → 26 文字）では問題ないが、1MB 入力では数�
 
 ## 解決方法
 
-- 各関数を上記の方針で書き換える
-- ベンチマークで改善を確認する
+- `base32_utils` の bitstring リスト連結をやめ、5 ビットを整数に蓄積して 8 シンボル (40 bit) ごとに 5 byte へ確定する `push_symbol/2` と、末尾のパディングビットを検証して切り詰める `finalize_decode/1` にした。呼び出し元のない `bits_list_size/1` は削除した
+- `base32_clockwork` と `base32_crockford` の decode をこの蓄積に切り替えた。clockwork のシンボル 1 文字の拒否は `decode/1` に残した
+- `base32_rfc4648` はパディングが最後のシンボルを書き換えるため、8 シンボルちょうどは次のシンボルが来るまで確定しない。パディングなし入力が非バイトアラインの bitstring を返す挙動は維持した
+- `base32_crockford` の encode は binary を 5 ビットずつ読み、integer は必要な桁数のビット列にして同じ経路でシンボル化する。チェックシンボルはバイトごとに 37 の剰余を取る
+- 変更前の 992 件の入出力と一致した。1MB の encode / decode (encode_check / decode_check を含む) はいずれも 100ms 未満。EUnit 27 件、proper 7 プロパティ、dialyzer、xref が通る
