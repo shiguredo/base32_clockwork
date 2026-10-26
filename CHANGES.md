@@ -2,9 +2,18 @@
 
 ## develop
 
+- [CHANGE] `base32_crockford:decode/1` の返却型を `{ok, binary()} | {error, invalid_format}` に変更する
+  - 不正な入力は例外ではなく `{error, invalid_format}` を返す
+  - @voluntas
 - [FIX] `base32_clockwork:decode/1` のパディング処理の欠陥を修正する
   - シンボル数が N mod 8 = 3 または 6 の入力でクラッシュするのを修正する
   - パディングビットが非ゼロの入力は `{error, invalid_format}` を返すようにする
+  - @voluntas
+- [FIX] `base32_crockford:decode/1` が不正文字やパディングビット非ゼロの入力でクラッシュするのを修正する
+  - fuzzing で検出された入力を回帰テストとして追加する
+  - @voluntas
+- [FIX] `base32_crockford:decode_check/1` が空入力でクラッシュするのを修正する
+  - 空入力は `{error, invalid_format}` を返す
   - @voluntas
 
 ### misc

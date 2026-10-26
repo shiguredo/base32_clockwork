@@ -155,155 +155,170 @@ symbol(36) ->
     $U.
 
 
--spec decode(binary()) -> binary().
+-spec decode(binary()) -> {ok, binary()} | {error, invalid_format}.
 decode(Data) when is_binary(Data) ->
     decode0(Data, []).
 
 
--spec decode_check(binary()) -> {ok, binary()} | {error, invalid}.
+-spec decode_check(binary()) -> {ok, binary()} | {error, invalid | invalid_format}.
+decode_check(<<>>) ->
+    %% チェックシンボルを含まない空入力は無効な入力として拒否する
+    {error, invalid_format};
 decode_check(Data) ->
     Size = (size(Data) - 1) * 8,
     <<Data0:Size/bitstring, Expectedcheck:8>> = Data,
-    Decoded = decode(Data0),
-    Check = check_symbol(data_to_integer(Decoded, false)),
-    case Check =:= Expectedcheck of
-        true ->
-            {ok, Decoded};
-        false ->
-            {error, invalid}
+    case decode(Data0) of
+        {ok, Decoded} ->
+            Check = check_symbol(data_to_integer(Decoded, false)),
+            case Check =:= Expectedcheck of
+                true ->
+                    {ok, Decoded};
+                false ->
+                    {error, invalid}
+            end;
+        {error, invalid_format} ->
+            {error, invalid_format}
     end.
 
 
 decode0(<<>>, Accu) ->
+    %% 全ビットを連結した後、バイト境界に収まらない末尾ビットをパディングとして除去する
     Decoded0 = base32_utils:rev_bits_list_to_binary(Accu),
     DecodedSize = bit_size(Decoded0),
     case DecodedSize rem 8 of
         0 ->
-            Decoded0;
+            {ok, Decoded0};
         PaddingSize ->
+            %% 正しいエンコード結果では末尾がゼロで埋まるため、非ゼロは invalid_format として拒否する
             DataSize = DecodedSize - PaddingSize,
-            <<Decoded1:DataSize/bitstring, 0:PaddingSize>> = Decoded0,
-            Decoded1
+            case Decoded0 of
+                <<Decoded1:DataSize/bitstring, 0:PaddingSize>> ->
+                    {ok, Decoded1};
+                _ ->
+                    {error, invalid_format}
+            end
     end;
-decode0(<<"0", Next/bitstring>>, Accu) ->
+decode0(<<"0", Next/binary>>, Accu) ->
     decode0(Next, [<<0:5>> | Accu]);
-decode0(<<"O", Next/bitstring>>, Accu) ->
+decode0(<<"O", Next/binary>>, Accu) ->
     decode0(Next, [<<0:5>> | Accu]);
-decode0(<<"o", Next/bitstring>>, Accu) ->
+decode0(<<"o", Next/binary>>, Accu) ->
     decode0(Next, [<<0:5>> | Accu]);
-decode0(<<"1", Next/bitstring>>, Accu) ->
+decode0(<<"1", Next/binary>>, Accu) ->
     decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"I", Next/bitstring>>, Accu) ->
+decode0(<<"I", Next/binary>>, Accu) ->
     decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"i", Next/bitstring>>, Accu) ->
+decode0(<<"i", Next/binary>>, Accu) ->
     decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"L", Next/bitstring>>, Accu) ->
+decode0(<<"L", Next/binary>>, Accu) ->
     decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"l", Next/bitstring>>, Accu) ->
+decode0(<<"l", Next/binary>>, Accu) ->
     decode0(Next, [<<1:5>> | Accu]);
-decode0(<<"2", Next/bitstring>>, Accu) ->
+decode0(<<"2", Next/binary>>, Accu) ->
     decode0(Next, [<<2:5>> | Accu]);
-decode0(<<"3", Next/bitstring>>, Accu) ->
+decode0(<<"3", Next/binary>>, Accu) ->
     decode0(Next, [<<3:5>> | Accu]);
-decode0(<<"4", Next/bitstring>>, Accu) ->
+decode0(<<"4", Next/binary>>, Accu) ->
     decode0(Next, [<<4:5>> | Accu]);
-decode0(<<"5", Next/bitstring>>, Accu) ->
+decode0(<<"5", Next/binary>>, Accu) ->
     decode0(Next, [<<5:5>> | Accu]);
-decode0(<<"6", Next/bitstring>>, Accu) ->
+decode0(<<"6", Next/binary>>, Accu) ->
     decode0(Next, [<<6:5>> | Accu]);
-decode0(<<"7", Next/bitstring>>, Accu) ->
+decode0(<<"7", Next/binary>>, Accu) ->
     decode0(Next, [<<7:5>> | Accu]);
-decode0(<<"8", Next/bitstring>>, Accu) ->
+decode0(<<"8", Next/binary>>, Accu) ->
     decode0(Next, [<<8:5>> | Accu]);
-decode0(<<"9", Next/bitstring>>, Accu) ->
+decode0(<<"9", Next/binary>>, Accu) ->
     decode0(Next, [<<9:5>> | Accu]);
-decode0(<<"A", Next/bitstring>>, Accu) ->
+decode0(<<"A", Next/binary>>, Accu) ->
     decode0(Next, [<<10:5>> | Accu]);
-decode0(<<"a", Next/bitstring>>, Accu) ->
+decode0(<<"a", Next/binary>>, Accu) ->
     decode0(Next, [<<10:5>> | Accu]);
-decode0(<<"B", Next/bitstring>>, Accu) ->
+decode0(<<"B", Next/binary>>, Accu) ->
     decode0(Next, [<<11:5>> | Accu]);
-decode0(<<"b", Next/bitstring>>, Accu) ->
+decode0(<<"b", Next/binary>>, Accu) ->
     decode0(Next, [<<11:5>> | Accu]);
-decode0(<<"C", Next/bitstring>>, Accu) ->
+decode0(<<"C", Next/binary>>, Accu) ->
     decode0(Next, [<<12:5>> | Accu]);
-decode0(<<"c", Next/bitstring>>, Accu) ->
+decode0(<<"c", Next/binary>>, Accu) ->
     decode0(Next, [<<12:5>> | Accu]);
-decode0(<<"D", Next/bitstring>>, Accu) ->
+decode0(<<"D", Next/binary>>, Accu) ->
     decode0(Next, [<<13:5>> | Accu]);
-decode0(<<"d", Next/bitstring>>, Accu) ->
+decode0(<<"d", Next/binary>>, Accu) ->
     decode0(Next, [<<13:5>> | Accu]);
-decode0(<<"E", Next/bitstring>>, Accu) ->
+decode0(<<"E", Next/binary>>, Accu) ->
     decode0(Next, [<<14:5>> | Accu]);
-decode0(<<"e", Next/bitstring>>, Accu) ->
+decode0(<<"e", Next/binary>>, Accu) ->
     decode0(Next, [<<14:5>> | Accu]);
-decode0(<<"F", Next/bitstring>>, Accu) ->
+decode0(<<"F", Next/binary>>, Accu) ->
     decode0(Next, [<<15:5>> | Accu]);
-decode0(<<"f", Next/bitstring>>, Accu) ->
+decode0(<<"f", Next/binary>>, Accu) ->
     decode0(Next, [<<15:5>> | Accu]);
-decode0(<<"G", Next/bitstring>>, Accu) ->
+decode0(<<"G", Next/binary>>, Accu) ->
     decode0(Next, [<<16:5>> | Accu]);
-decode0(<<"g", Next/bitstring>>, Accu) ->
+decode0(<<"g", Next/binary>>, Accu) ->
     decode0(Next, [<<16:5>> | Accu]);
-decode0(<<"H", Next/bitstring>>, Accu) ->
+decode0(<<"H", Next/binary>>, Accu) ->
     decode0(Next, [<<17:5>> | Accu]);
-decode0(<<"h", Next/bitstring>>, Accu) ->
+decode0(<<"h", Next/binary>>, Accu) ->
     decode0(Next, [<<17:5>> | Accu]);
-decode0(<<"J", Next/bitstring>>, Accu) ->
+decode0(<<"J", Next/binary>>, Accu) ->
     decode0(Next, [<<18:5>> | Accu]);
-decode0(<<"j", Next/bitstring>>, Accu) ->
+decode0(<<"j", Next/binary>>, Accu) ->
     decode0(Next, [<<18:5>> | Accu]);
-decode0(<<"K", Next/bitstring>>, Accu) ->
+decode0(<<"K", Next/binary>>, Accu) ->
     decode0(Next, [<<19:5>> | Accu]);
-decode0(<<"k", Next/bitstring>>, Accu) ->
+decode0(<<"k", Next/binary>>, Accu) ->
     decode0(Next, [<<19:5>> | Accu]);
-decode0(<<"M", Next/bitstring>>, Accu) ->
+decode0(<<"M", Next/binary>>, Accu) ->
     decode0(Next, [<<20:5>> | Accu]);
-decode0(<<"m", Next/bitstring>>, Accu) ->
+decode0(<<"m", Next/binary>>, Accu) ->
     decode0(Next, [<<20:5>> | Accu]);
-decode0(<<"N", Next/bitstring>>, Accu) ->
+decode0(<<"N", Next/binary>>, Accu) ->
     decode0(Next, [<<21:5>> | Accu]);
-decode0(<<"n", Next/bitstring>>, Accu) ->
+decode0(<<"n", Next/binary>>, Accu) ->
     decode0(Next, [<<21:5>> | Accu]);
-decode0(<<"P", Next/bitstring>>, Accu) ->
+decode0(<<"P", Next/binary>>, Accu) ->
     decode0(Next, [<<22:5>> | Accu]);
-decode0(<<"p", Next/bitstring>>, Accu) ->
+decode0(<<"p", Next/binary>>, Accu) ->
     decode0(Next, [<<22:5>> | Accu]);
-decode0(<<"Q", Next/bitstring>>, Accu) ->
+decode0(<<"Q", Next/binary>>, Accu) ->
     decode0(Next, [<<23:5>> | Accu]);
-decode0(<<"q", Next/bitstring>>, Accu) ->
+decode0(<<"q", Next/binary>>, Accu) ->
     decode0(Next, [<<23:5>> | Accu]);
-decode0(<<"R", Next/bitstring>>, Accu) ->
+decode0(<<"R", Next/binary>>, Accu) ->
     decode0(Next, [<<24:5>> | Accu]);
-decode0(<<"r", Next/bitstring>>, Accu) ->
+decode0(<<"r", Next/binary>>, Accu) ->
     decode0(Next, [<<24:5>> | Accu]);
-decode0(<<"S", Next/bitstring>>, Accu) ->
+decode0(<<"S", Next/binary>>, Accu) ->
     decode0(Next, [<<25:5>> | Accu]);
-decode0(<<"s", Next/bitstring>>, Accu) ->
+decode0(<<"s", Next/binary>>, Accu) ->
     decode0(Next, [<<25:5>> | Accu]);
-decode0(<<"T", Next/bitstring>>, Accu) ->
+decode0(<<"T", Next/binary>>, Accu) ->
     decode0(Next, [<<26:5>> | Accu]);
-decode0(<<"t", Next/bitstring>>, Accu) ->
+decode0(<<"t", Next/binary>>, Accu) ->
     decode0(Next, [<<26:5>> | Accu]);
-decode0(<<"V", Next/bitstring>>, Accu) ->
+decode0(<<"V", Next/binary>>, Accu) ->
     decode0(Next, [<<27:5>> | Accu]);
-decode0(<<"v", Next/bitstring>>, Accu) ->
+decode0(<<"v", Next/binary>>, Accu) ->
     decode0(Next, [<<27:5>> | Accu]);
-decode0(<<"W", Next/bitstring>>, Accu) ->
+decode0(<<"W", Next/binary>>, Accu) ->
     decode0(Next, [<<28:5>> | Accu]);
-decode0(<<"w", Next/bitstring>>, Accu) ->
+decode0(<<"w", Next/binary>>, Accu) ->
     decode0(Next, [<<28:5>> | Accu]);
-decode0(<<"X", Next/bitstring>>, Accu) ->
+decode0(<<"X", Next/binary>>, Accu) ->
     decode0(Next, [<<29:5>> | Accu]);
-decode0(<<"x", Next/bitstring>>, Accu) ->
+decode0(<<"x", Next/binary>>, Accu) ->
     decode0(Next, [<<29:5>> | Accu]);
-decode0(<<"Y", Next/bitstring>>, Accu) ->
+decode0(<<"Y", Next/binary>>, Accu) ->
     decode0(Next, [<<30:5>> | Accu]);
-decode0(<<"y", Next/bitstring>>, Accu) ->
+decode0(<<"y", Next/binary>>, Accu) ->
     decode0(Next, [<<30:5>> | Accu]);
-decode0(<<"Z", Next/bitstring>>, Accu) ->
+decode0(<<"Z", Next/binary>>, Accu) ->
     decode0(Next, [<<31:5>> | Accu]);
-decode0(<<"z", Next/bitstring>>, Accu) ->
+decode0(<<"z", Next/binary>>, Accu) ->
     decode0(Next, [<<31:5>> | Accu]);
-decode0(<<"-", Next/bitstring>>, Accu) ->
-    decode0(Next, Accu).
+decode0(<<"-", Next/binary>>, Accu) ->
+    decode0(Next, Accu);
+decode0(_, _) ->
+    {error, invalid_format}.
