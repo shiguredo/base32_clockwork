@@ -2,9 +2,9 @@
 
 - Priority: Medium
 - Created: 2026-07-20
-- Completed: {YYYY-MM-DD}
+- Completed: 2026-10-26
 - Model: qwen3.8-max-preview
-- Branch: feature/add-unit-tests
+- Branch: develop
 - Polished: {YYYY-MM-DD}
 
 ## 目的
@@ -35,13 +35,19 @@
 
 ## 完了条件
 
-- 全 facade 経路（4 フォーマット）のテストが存在する
-- 全エラーパスのテストが存在する
-- case-insensitive / エイリアスのテストが存在する
+- 全 facade 経路 (4 フォーマット) のテストが存在する
+- エラーパスのテストが既存テストで網羅されている
+- case-insensitive / エイリアスと空 binary は PBT (0009) で検証する
 - `-import` がテストから削除されている
-- `make test` が通る
+- 冗長な `ok` が削除されている
+- `make test` と `make proper` が通る
 
 ## 解決方法
 
-- 各テストファイルに上記のテストケースを追加する
-- `-import` を削除して `base32:encode(...)` 形式に統一する
+- テストの追加方針を PBT 前提に変更した。case-insensitive / エイリアスと空 binary は EUnit で網羅せず 0009 の PBT で検証する
+- EUnit に不足していた facade (crockford_check / clockwork) のテストを追加する
+- decode_check のチェックサム不一致と encode_check の integer 入力は 0001〜0006 の対応で既に追加済み
+- rfc4648 の decode が invalid_format を返すのは catch-all 節 1 経路のみで、既存の 1 件がその経路をカバーしているため追加はしない
+- テスト 4 ファイルの `-import` を削除して完全修飾呼び出しに統一する
+- 冗長な `ok` を削除する
+- efmt / elint / EUnit (27 件) / dialyzer / xref / `make proper` (7 プロパティ) が通ることを確認する
