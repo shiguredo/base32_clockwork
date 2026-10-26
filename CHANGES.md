@@ -9,6 +9,12 @@
 
 ### misc
 
+- [ADD] fuzzer による fuzzing を導入する
+  - `make fuzzing` で全フォーマットの decode 経路に fuzzing を実行する
+  - @voluntas
+
+### misc
+
 - [CHANGE] GitHub Actions のコンテナイメージをやめて shiguredo/setup-erlang で Erlang/OTP 29.0.6 / AWS-LC v5.8.0 をセットアップし、`minimum_otp_vsn` を 29.0 にする
   - @voluntas
 - [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、prek (`prek.toml`) 経由の efmt / elint (`shiguredo/erlang-pre-commit` 2026.4.0) に切り替える
