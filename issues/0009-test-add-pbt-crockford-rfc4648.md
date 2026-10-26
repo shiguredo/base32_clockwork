@@ -2,9 +2,9 @@
 
 - Priority: Medium
 - Created: 2026-07-20
-- Completed: {YYYY-MM-DD}
+- Completed: 2026-10-26
 - Model: qwen3.8-max-preview
-- Branch: feature/add-pbt-crockford-rfc4648
+- Branch: develop
 - Polished: {YYYY-MM-DD}
 
 ## 目的
@@ -36,5 +36,8 @@ crockford は integer エンコードや check symbol など複雑な経路が�
 
 ## 解決方法
 
-- `test/prop_base32_crockford.erl` と `test/prop_base32_rfc4648.erl` を新規作成する
-- `test/prop_base32_clockwork.erl` の range と性質を追加する
+- `test/prop_base32_crockford.erl` に binary の encode/decode roundtrip、encode_check/decode_check roundtrip、case-insensitive / O・I・L エイリアスの性質を追加する
+- `test/prop_base32_rfc4648.erl` を新規作成し、encode/decode roundtrip を検証する
+- `test/prop_base32_clockwork.erl` の range を (0, 100) に変更して空 binary の roundtrip をカバーし、case-insensitive / O・I・L エイリアスの性質を追加する
+- エイリアスの性質は canonical なエンコード出力の A から Z を小文字化する変換と、0 を O、1 を I、1 を L に置換する変換を oneof で選ぶ 1 プロパティで検証する
+- efmt / elint / EUnit (27 件) / dialyzer / xref / `make proper` (7 プロパティ) が通ることを確認する
