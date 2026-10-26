@@ -2,6 +2,10 @@
 
 ## develop
 
+## 2026.1.0
+
+**リリース日**: 2026-10-26
+
 - [CHANGE] デコーダーのエラー型を `{error, invalid_format}` に統一する
   - `base32_crockford:decode/1` の返却型を `{ok, binary()} | {error, invalid_format}` に変更する
   - `base32_crockford:decode_check/1` のチェックサム不一致の `{error, invalid}` をやめる
